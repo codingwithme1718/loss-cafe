@@ -1,0 +1,1 @@
+web: gunicorn loss_cafe.wsgi --log-file -

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}{{ background.title }}{% endblock %}</title>
+    <!-- Bootstrap CSS -->
+    <link
+        rel="stylesheet"
+        href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+        crossorigin="anonymous"
+    />
+
+    <link
+        rel="stylesheet"
+        href="https://use.fontawesome.com/releases/v5.4.1/css/all.css"
+        integrity="sha384-5sAR7xN1Nv6T6+dT2mhtzEpVJvfS3NScPQTrOxhwjIuvcA67KV2R5Jz6kr4abQsz"
+        crossorigin="anonymous"
+    />
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&family=Lora:ital,wght@1,700&display=swap"
+        rel="stylesheet"
+    />
+    <!-- Include Google Fonts -->
+    <style>
+        body {
+            margin: 0;
+            font-family: "Roboto", sans-serif;
+            background-color: #f8f8f8;
+            box-sizing: border-box;
+            overflow-x: hidden;
+        }
+
+        .navbar {
+            background-color: #0e733b; /* Green background */
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between; /* Ensure content is spaced between the two edges */
+            align-items: center;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+        }
+
+        .navbar-logo {
+            display: flex; /* Flex container for logo and text */
+            align-items: center; /* Center logo and text vertically */
+            gap: 10px; /* Space between logo and text */
+        }
+
+        .navbar-logo img {
+            width: 50px; /* Set logo size */
+            height: auto; /* Maintain aspect ratio */
+        }
+
+        .navbar-logo a {
+            text-decoration: none;
+            font-size: 1.8em;
+            font-weight: bold;
+            color: white; /* Set text color for logo */
+        }
+
+        .navbar-search {
+            margin-left: auto; /* Ensure the search bar moves to the right side */
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-right: 30px;
+        }
+
+        .navbar-search input[type="text"] {
+            padding: 8px;
+            border: 2px solid #0e733b;
+            border-radius: 5px;
+            font-size: 1em;
+            width: 180px; /* Set fixed width for input */
+            max-width: 200px; /* Limit the width of the search input */
+        }
+
+        .navbar-search button {
+            padding: 8px 12px;
+            background-color: #f0a500;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            height: 40px; /* Set a fixed height */
+        }
+
+        .navbar-search button:hover {
+            background-color: #d28c00;
+        }
+
+        /* General content styles */
+        .content {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 70px; /* Add margin to prevent content from being hidden behind navbar */
+        }
+
+        .footer {
+            background-color: #0e733b;
+            color: white;
+            padding: 60px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            text-align: center;
+            width: 100%;
+        }
+
+        /* Footer Columns */
+        .footer-left,
+        .footer-right {
+            flex: 1;
+            min-width: 300px;
+            margin: 20px;
+        }
+
+        .footer-left h2 {
+            font-size: 2em;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+
+        .footer-left p {
+            margin: 10px 0;
+            line-height: 1.6;
+            max-width: 400px;
+            margin: 0 auto; /* Center the text */
+        }
+
+        .footer-right {
+            max-width: 300px;
+            text-align: left;
+            margin: 0 auto;
+        }
+
+        .footer-right .contact-info {
+            font-size: 1.1em;
+        }
+
+        .footer-right .contact-info p {
+            margin: 5px 0;
+        }
+
+        .footer-right a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .footer-right a:hover {
+            text-decoration: underline;
+        }
+
+        /* Card styles */
+        .card {
+            background-color: black; /* Background color for cards */
+            border: 2px solid black; /* Border color */
+            box-shadow: 0 4px 10px rgba(0, 255, 0, 0.5); /* Green shadow */
+            color: white; /* Text color */
+            margin: 10px; /* Margin between cards */
+        }
+
+        /* Media Queries */
+        @media (max-width: 768px) {
+            .footer {
+                flex-direction: column; /* Stack footer content vertically */
+                text-align: center;
+            }
+
+            .footer-right {
+                text-align: center;
+            }
+
+            .card {
+                margin: 5px; /* Smaller margin for mobile */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="navbar-logo">
+            <a href="/" style="color: white; text-decoration: none">
+                <img
+                    src="{{ background.icon_image.url }}"
+                    alt="{{ background.icon_image }}"
+                />
+            </a>
+            <a href="/" class="text"><span>Loss Cafe</span></a>
+        </div>
+        <div class="navbar-search">
+            <form action="{% url 'search_subsubcategory' %}" method="get">
+                <input type="text" placeholder="Search..." name="q" />
+                <button type="submit">Search</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="container" style="background-size: cover; background-image: url('{{ background.image.url }}'); max-width: 100%; height: 100vh; max-height: 100vh; display: flex; justify-content: center; align-items: center; flex-direction: column; text-align: center; padding: 20px;">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <div class="footer">
+        <div class="footer-left">
+            <div class="footer-logo">
+                <img
+                    src="{{ background.icon_image.url }}"
+                    alt="{{ background.icon_image }}"
+                />
+            </div>
+            <h2>Loss Cafe</h2>
+            <p>
+                Sıcak bir atmosfer, lezzet dolu bir mutfak ve enfes içeceklerle dolu
+                bir kaçamak vaat ediyor...
+            </p>
+
+            <div class="social-icons">
+                <a href="https://instagram.com" target="_blank">Instagram</a>
+                <a href="https://twitter.com" target="_blank">Twitter</a>
+                <a href="https://facebook.com" target="_blank">Facebook</a>
+            </div>
+        </div>
+
+        <div class="footer-right">
+            <div class="contact-info">
+                <p><strong>Bize Ulaşın:</strong></p>
+                <p>Adres: Cafe Cadde No:10, City</p>
+                <p>Telefon: 0123 456 789</p>
+                <p>Email: info@losscafe.com</p>
+                <a href="/contact">İletişim Formu</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery and Bootstrap Bundle -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3oAiT1z1zLy4V9aD4m5u4Iu+g04v4Zt4OezEguZlywDaiJqik11dq66H+N9Y" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-2N2v1M2U3JdA+O9mF2fQW/q54+cJ9Y5t3e2RAnRNLtg9vCZhMZTgggzObEgrV3H4" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8j3vA/M1H9Zy1dQ5hz+z9aLh0y6N4MZJm5rPs5DfD5C7d5jWj" crossorigin="anonymous"></script>
+</body>
+</html>

@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Your Cafe</title>
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://use.fontawesome.com/releases/v5.4.1/css/all.css"
+      integrity="sha384-5sAR7xN1Nv6T6+dT2mhtzEpVJvfS3NScPQTrOxhwjIuvcA67KV2R5Jz6kr4abQsz"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+
+    <style>
+      body {
+        margin: 0;
+        font-family: "Roboto", sans-serif;
+        background-color: #f8f8f8;
+        box-sizing: border-box;
+        overflow-x: hidden;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh; /* Ensures the body takes at least full viewport height */
+      }
+
+      .navbar {
+        background-color: #0e733b; /* Green background */
+        color: white;
+        padding: 15px 20px;
+        display: flex;
+        justify-content: space-between; /* Ensure content is spaced between the two edges */
+        align-items: center;
+        position: fixed;
+        width: 100%;
+        top: 0;
+        left: 0;
+        z-index: 1000;
+      }
+
+      .navbar-logo {
+        display: flex; /* Flex container for logo and text */
+        align-items: center; /* Center logo and text vertically */
+        gap: 10px; /* Space between logo and text */
+      }
+
+      .navbar-logo img {
+        width: 60px; /* Set logo size */
+        height: auto; /* Maintain aspect ratio */
+      }
+
+      .navbar-logo a {
+        text-decoration: none;
+        font-size: 1.8em;
+        font-weight: bold;
+        color: wheat !important;
+      }
+
+      .navbar-search {
+        margin-left: auto; /* Ensure the search bar moves to the right side */
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding-right: 30px;
+      }
+
+      .navbar-search input[type="text"] {
+        padding: 8px;
+        border: 2px solid #0e733b;
+        border-radius: 5px;
+        font-size: 1em;
+        width: 180px; /* Set fixed width for input */
+        max-width: 200px; /* Limit the width of the search input */
+        background: wheat !important;
+        color: white;
+        outline: none !important;
+      }
+
+      .navbar-search button {
+        padding: 8px 12px;
+        background-color: #f0a500;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 1em;
+        cursor: pointer;
+        height: 40px; /* Set a fixed height */
+      }
+
+      .navbar-search button:hover {
+        background-color: #d28c00;
+      }
+
+      /* Content should take the full available height and place items in the center */
+      main {
+        display: flex;
+        justify-content: center;
+        align-items: flex-end; /* Align items to the bottom */
+        min-height: 80vh; /* Ensure the main area takes at least 80% of the viewport */
+        padding: 20px;
+        margin-top: 70px; /* Push content below navbar */
+      }
+
+      .row {
+        display: flex;
+        justify-content: center; /* Center items horizontally */
+        flex-wrap: wrap; /* Allow items to wrap if there are many */
+      }
+
+      .card {
+        background-color: black; /* Background color for cards */
+        border: 6px solid black; /* Border color */
+        box-shadow: 0 5px 15px rgba(0, 255, 0, 0.5); /* Green shadow */
+        color: white; /* Text color */
+        margin: 10px;
+        height: 300px; /* Set a fixed height for all cards */
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between; /* Space out the card content */
+      }
+
+      .card-body {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      .footer {
+        background-color: #0e733b;
+        color: white;
+        padding: 10px 20px;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        text-align: center;
+        width: 100%;
+        margin: auto;
+        padding-bottom: 0px;
+      }
+
+      .footer-left,
+      .footer-right {
+        width: 400px;
+        margin: auto;
+        color: wheat !important;
+      }
+
+      .social-icons a {
+        color: wheat !important; /* Icon color */
+        margin: 0 10px; /* Space between icons */
+        font-size: 36px; /* Set the size of the icons */
+      }
+
+      .social-icons a:hover {
+        color: #f0a500; /* Change color on hover */
+      }
+
+      .row.category{
+        width: 100%;
+        padding: 20px;
+        margin-left: auto;
+        margin-right: auto;
+        padding-bottom: 30px;
+      }
+
+      @media (max-width: 500px) {
+        .container {
+          background-size: contain !important;
+          margin-top: 155px !important;
+          min-height: auto !important;
+        }
+    
+        .row.category{
+          width: 80% !important;
+          padding: 0 !important;
+        }
+
+        main {
+          padding-top: 40px !important;
+        }
+
+        .h-100 {
+          height: auto !important;
+        }
+
+        .card-title{
+          font-size: 1rem;
+          line-height: 1;
+        }
+
+        .card-text{
+          font-size: 0.8rem;
+          line-height: 1;
+        }
+        
+        .navbar-search input[type="text"],
+        .navbar-search button {
+          max-width: 85% !important;
+          width: 85%;
+        }
+
+        .navbar-logo{
+          width: 100%;
+          display: block !important;
+          text-align: center;
+        }
+
+        .navbar-logo a {
+          display: block !important;
+          width: 100%;
+        }
+
+        .navbar-logo a.text span{
+          font-size: 0.8em;
+        }
+
+        .navbar-search {
+          position: relative;
+          display: block !important;
+          padding: 0px;
+          max-width: 80%;
+          margin: auto;
+        }
+  
+        .navbar-search input[type="text"] {
+            width: 100%;
+            padding-right: 80px; /* Add space for the button */
+            border: none;
+            border-radius: 0;
+        }
+    
+        .navbar-search button {
+            position: absolute;
+            right: 0; /* Position the button on the right side of the input */
+            top: 0;
+            height: 100%;
+            padding: 0 15px; /* Adjust padding to match input height */
+            width: 15%;
+            border-radius: 0;
+        }
+
+        .navbar { 
+          display: block !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="navbar-logo">
+        <a href="/" style="color: white; text-decoration: none">
+          <img
+            src="{{ background.icon_image.url }}"
+            alt="{{ background.icon_image }}"
+          />
+        </a>
+        <a href="/" class="text"><span>{{background.title}}</span></a>
+      </div>
+      <div class="navbar-search">
+        <form action="{% url 'search_subsubcategory' %}" method="get">
+          <input type="text" placeholder="Arama..." name="q" />
+          <button type="submit" style="background-color: #c4ca1d !important">
+            <i class="fa fa-search"></i>
+          </button>
+        </form>
+      </div>
+    </nav>
+
+    <main
+      class="container mt-4"
+      style="background-size: cover; background-image: url('{{ background.image.url }}'); max-width: 100%;min-height: 100vh;"
+    >
+      {% block content %} {% endblock %}
+    </main>
+
+    <footer class="footer">
+      <div class="row">
+        <div class="footer-left">
+          <div class="footer-logo">
+            <img
+              src="{{ background.icon_image.url }}"
+              alt="{{ background.icon_image }}"
+            />
+          </div>
+          <h2>Loss Cafe</h2>
+          <p>
+            {{background.description}}
+          </p>
+
+          <div class="social-icons">
+            {% if background.href_instagram %}
+            <a href="{{ background.href_instagram }}" target="_blank"
+              ><i class="fa fa-instagram" aria-hidden="true"></i
+            ></a>
+            {% endif %}
+            {% if background.href_twitter %}
+            <a href="{{ background.href_twitter }}" target="_blank"
+              ><i class="fa fa-twitter" aria-hidden="true"></i
+            ></a>
+            {% endif %}
+            {% if background.href_facebook %}
+            <a href="{{ background.href_facebook }}" target="_blank"
+              ><i class="fa fa-facebook" aria-hidden="true"></i
+            ></a>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="footer-right">
+          <div class="contact-info">
+            <p><strong>Bize Ulaşın:</strong></p>
+            <p>Adres: Cafe Cadde No:10, City</p>
+            <p>Telefon: 0123 456 789</p>
+            <p>Email: info@losscafe.com</p>
+            <a href="/contact" style="color: wheat !important"
+              >İletişim Formu</a
+            >
+          </div>
+        </div>
+      </div>
+
+      <div class="row" style="padding-top: 30px;">
+        <div class="container" style="color: wheat !important;">
+          <p>
+            Copyright <i class="fa fa-copyright"></i> 2024
+            <a>LOSS CAFE</a> - Tüm Hakları
+            Saklıdır .
+          </p>
+        </div>
+      </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  </body>
+</html>
