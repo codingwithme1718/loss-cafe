@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-)1_8$l1(6*)!&p9=e2&=7r1c89#idvahly+664j3f**u+%3e40
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["24.199.126.247", "losscafe.com.tr", "www.losscafe.com.tr"]
 
 
 # Application definition
@@ -153,4 +153,12 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 STATIC_URL = '/static/'
 
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_ROOT = 'root/loss-cafe/staticfiles'
+
+
+SESSION_COOKIE_SECURE = True  # Use secure cookies
+CSRF_COOKIE_SECURE = True  # Use secure CSRF cookies
+SECURE_SSL_REDIRECT = False
+CSRF_TRUSTED_ORIGINS = ['https://losscafe.com.tr', 'https://www.losscafe.com.tr']
+
+
