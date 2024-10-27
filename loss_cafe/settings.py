@@ -98,14 +98,15 @@ DATABASES = {
 #    'default': dj_database_url.config(conn_max_age=600)
 # }
 
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',  # Or 'django.db.backends.mysql' for MySQL
-        'NAME': 'd1mo6faus5n8o6',                # Replace with your database name
-        'USER': 'u7rlmbg01ftmnq',                # Replace with your database username
-        'PASSWORD': 'p7ed2ff3fbe6117ac87795c6f872a087aa3357706b9451078e680493128f1a437',        # Replace with your database password
-        'HOST': 'c8m0261h0c7idk.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com',                # Use 'localhost' for local development
-        'PORT': '5432',                # Default is '5432' for PostgreSQL
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('DATABASE_NAME', 'losscafe_db'),
+        'USER': os.getenv('DATABASE_USER', 'losscafe_user'),
+        'PASSWORD': os.getenv('DATABASE_PASSWORD', 'losscafe_pass'),
+        'HOST': os.getenv('DATABASE_HOST', 'db'),
+        'PORT': os.getenv('DATABASE_PORT', '5432'),
     }
 }
 
@@ -150,10 +151,13 @@ USE_TZ = True
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
-STATIC_URL = '/static/'
+MEDIA_ROOT = '/roow/loss-cafe/media'
+# STATIC_URL = '/static/'
 
-STATIC_ROOT = 'root/loss-cafe/staticfiles'
+# STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 
 SESSION_COOKIE_SECURE = True  # Use secure cookies
