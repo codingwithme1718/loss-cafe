@@ -34,7 +34,7 @@ class MenuBackground(models.Model):
             new_image = InMemoryUploadedFile(
                 img_io,
                 'ImageField',  # Field name
-                f"{self.image.name.split('.')[0]}_compressed.jpg",
+                f"{self.image.name.split('.')[0]}.jpg",
                 'image/jpeg',
                 sys.getsizeof(img_io),
                 None

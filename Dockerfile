@@ -14,4 +14,3 @@ COPY . /app/
 
 # Run Gunicorn
 CMD ["gunicorn", "--bind", "0.0.0.0:8000", "loss_cafe.wsgi:application"]
-

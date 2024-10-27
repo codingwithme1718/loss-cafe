@@ -14,7 +14,7 @@ services:
       DATABASE_NAME: losscafe_db
       DATABASE_USER: losscafe_user
       DATABASE_PASSWORD: losscafe_pass
-      DATABASE_HOST: db
+      DATABASE_HOST: db  # Corrected to 'db'
       DATABASE_PORT: 5432
 
   db:
@@ -30,4 +30,3 @@ services:
 
 volumes:
   postgres_data:
-
