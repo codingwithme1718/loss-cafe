@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.views import View  # Import View here
-from .models import Category, SubCategory, SubSubCategory, MenuBackground
+from .models import Category, SubCategory, SubSubCategory, SubSubSubCategory, MenuBackground
 
 def search_subsubcategory(request):
     query = request.GET.get('q')
@@ -43,5 +43,16 @@ class SubSubCategoryListView(View):
         return render(request, 'cafe/subsubcategories_list.html', {
             'subsubcategories': subsubcategories,
             'subcategory': subcategory,
+            'background': background
+        })
+
+class SubSubSubCategoryListView(View):
+    def get(self, request, subsubcategory_id):
+        subsubcategory = SubSubCategory(SubSubCategory, pk=subsubcategory_id)
+        subsubsubcategories = SubSubSubCategory.objects.filter(subsubcategory=subsubcategory)
+        background = MenuBackground.objects.first()
+        return render(request, 'cafe/subsubsubcategories_list.html', {
+            'subsubsubcategories': subsubsubcategories,
+            'subsubcategory': subsubcategory,
             'background': background
         })

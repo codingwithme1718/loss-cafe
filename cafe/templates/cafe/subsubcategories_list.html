@@ -3,34 +3,28 @@
 {% block content %}
     <div class="row category">
         {% for subsubcategory in subsubcategories %}
-            {% if subsubcategories|length <= 2 %}
-                <div class="col-md-6 col-lg-6"> <!-- If 2 items or fewer, make them wider -->
-            {% elif subsubcategories|length <= 4 %}
-                <div class="col-md-4 col-lg-3"> <!-- If 3-4 items, make them medium size -->
-            {% elif subsubcategories|length <= 5 %}
-                <div class="col-md-3 col-lg-2"> <!-- If 5-6 items, make them smaller -->
-            {% else %}
-                <div class="col-md-2 col-lg-2"> <!-- More than 6 items, make them even smaller -->
+	    {% if subsubcategory.id %}
+                <a href="{% url 'subsubsubcategory-list' subcategory.id subsubcategory.id %}" class="text-decoration-none" style="cursor: pointer;">
             {% endif %}
-            <a href="{% url 'subsubcategory-list' subcategory.id %}" class="text-decoration-none" style="cursor: pointer;"> <!-- Add this line -->
-                <div class="card h-100"> <!-- Ensure card height takes full space -->
-                        <!-- Card image container -->
-                        <div class="card-img-container" style="position: relative; width: 100%; padding-top: 75%;">
-                            <img
-                                class="card-img-top"
-                                src="{{ subsubcategory.image.url }}"
-                                alt="{{ subsubcategory.name }}"
-                                style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;"
-                            />
-                        </div>
-                        <!-- Card body (title and description) -->
-                        <div class="card-body d-flex flex-column" style="color: wheat !important;">
-                            <h5 class="card-title" style="font-weight: bold;">{{ subsubcategory.name }}</h5>
-                            <p class="card-text">{{ subsubcategory.description }}</p>
-                        </div>
+	    <div class="col-md-3 col-lg-2">         
+                <div class="card h-100"> 
+                    <div class="card-img-container" style="position: relative; width: 100%; padding-top: 75%;">
+                        <img
+                            class="card-img-top"
+                            src="{{ subsubcategory.image.url }}"
+                            alt="{{ subsubcategory.name }}"
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;"
+                        />
+                    </div>
+                    <div class="card-body d-flex flex-column" style="color: wheat !important;">
+                        <h5 class="card-title" style="font-weight: bold;">{{ subsubcategory.name }}</h5>
+                        <p class="card-text">{{ subsubcategory.description }}</p>
                     </div>
                 </div>
-            </a>
+            </div>
+	    {% if subsubcategory.id %}
+	        </a>
+            {% endif %}
         {% endfor %}
     </div>
 {% endblock %}
