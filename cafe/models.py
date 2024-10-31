@@ -68,7 +68,7 @@ class SubSubCategory(models.Model):
     description = models.TextField()
     image = models.ImageField(upload_to='subsubcategory_images/', blank=True, null=True)  # Sub-subcategory image
     subcategory = models.ForeignKey(SubCategory, related_name='subsubcategories', on_delete=models.CASCADE)
-
+    price = models.CharField(max_length=100, null=True, blank=True)
     def __str__(self):
         return self.name
 
@@ -77,6 +77,6 @@ class SubSubSubCategory(models.Model):
     description = models.TextField()
     image = models.ImageField(upload_to='subsubsubcategory_images/', blank=True, null=True)  # Sub-subcategory image
     subsubcategory = models.ForeignKey(SubSubCategory, related_name='subsubsubcategories', on_delete=models.CASCADE)
-
+    price = models.CharField(max_length=100)
     def __str__(self):
         return self.name
