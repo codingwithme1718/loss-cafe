@@ -47,9 +47,9 @@ class SubSubCategoryListView(View):
         })
 
 class SubSubSubCategoryListView(View):
-    def get(self, request, subsubcategory_id):
+    def get(self, request, subcategory_id, subsubcategory_id):
         subsubsubcategories = SubSubSubCategory.objects.filter(subsubcategory_id=subsubcategory_id)
-        subsubcategory = SubSubCategory.get(id=subsubcategory_id)
+        subsubcategory = SubSubCategory.objects.get(id=subsubcategory_id)
         background = MenuBackground.objects.first()
         return render(request, 'cafe/subsubsubcategories_list.html', {
             'subsubsubcategories': subsubsubcategories,

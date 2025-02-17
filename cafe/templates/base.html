@@ -170,7 +170,14 @@
         padding-bottom: 30px;
       }
 
+      #backButton{
+        display: none;
+      }
+
       @media (max-width: 500px) {
+        #backButton{
+          display: inline-block !important;
+        }
         .container {
           background-size: contain !important;
           margin-top: 155px !important;
@@ -272,6 +279,23 @@
       </div>
     </nav>
 
+    <button id="backButton" onclick="window.history.back()" style="
+        display: inline-block;
+        margin: 160px 0px;
+        padding: 10px 20px;
+        background-color: #0e733b;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1em;
+        position: fixed;
+        float: left;
+        z-index: 1000;
+      ">
+      <i class="fa fa-arrow-left" aria-hidden="true"></i>
+    </button>
+
     <main
       class="container mt-4"
       style="background-size: cover; background-image: url('{{ background.image.url }}'); max-width: 100%;min-height: 100vh;"
@@ -315,12 +339,9 @@
         <div class="footer-right">
           <div class="contact-info">
             <p><strong>Bize Ulaşın:</strong></p>
-            <p>Adres: Cafe Cadde No:10, City</p>
-            <p>Telefon: 0123 456 789</p>
-            <p>Email: info@losscafe.com</p>
-            <a href="/contact" style="color: wheat !important"
-              >İletişim Formu</a
-            >
+	    <p><a style="color: wheat !important;text-decoration: underline;" target="_blank" href="https://www.google.com/maps/place//data=!4m2!3m1!1s0x1525e9088b9bb751:0x6a57ee16a0c50f3c?sa=X&ved=1t:8290&ictx=111">Adres: {{background.address}}</a></p>
+	    <p style="color: wheat !important;">Telefon: {{background.telephone}}</p>
+	    <p style="color: wheat !important;">Email: {{background.email}}</p>
           </div>
         </div>
       </div>

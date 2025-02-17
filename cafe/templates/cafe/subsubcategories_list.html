@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-
+{% load static %}
 {% block content %}
     <div class="row category">
         {% for subsubcategory in subsubcategories %}
@@ -11,7 +11,7 @@
                     <div class="card-img-container" style="position: relative; width: 100%; padding-top: 75%;">
                         <img
                             class="card-img-top"
-                            src="{{ subsubcategory.image.url }}"
+                            src="{% if subsubcategory.image %}{{ subsubcategory.image.url }}{% else %}/media/loss_cafe_default.png{% endif %}"
                             alt="{{ subsubcategory.name }}"
                             style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;"
                         />

@@ -6,12 +6,12 @@
 	        <div class="col-md-3 col-lg-2">
                 {% if not subcategory.price %}
                     <a href="{% url 'subsubcategory-list' subcategory.id %}" class="text-decoration-none" style="cursor: pointer;">
-                {% endif %}     
+                {% endif %} 
                     <div class="card h-100"> 
                         <div class="card-img-container" style="position: relative; width: 100%; padding-top: 75%;">
                             <img
                                 class="card-img-top"
-                                src="{% if subcategory.image %}{{ subcategory.image.url }}{% else %}{% static 'loss_cafe_default.png' %}{% endif %}"
+                                src="{% if subcategory.image %}{{ subcategory.image.url }}{% else %}/media/loss_cafe_default.png{% endif %}"
                                 alt="{{ subcategory.name }}"
                                 style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;"
                             />

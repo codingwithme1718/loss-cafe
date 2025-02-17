@@ -12,7 +12,7 @@ class MenuBackground(models.Model):
     color = models.CharField(max_length=7, help_text="Enter a hex color code (e.g., #FFFFFF for white)")
     image = models.ImageField(upload_to='background_images/', blank=True, null=True)
 
-    description = models.TextField()
+    description = models.TextField(default="", null=True)
     href_instagram = models.CharField(max_length=200, default="")
     href_facebook = models.CharField(max_length=200, default="")
     href_twitter = models.CharField(max_length=200, default="")
@@ -48,7 +48,7 @@ class MenuBackground(models.Model):
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
-    description = models.TextField()
+    description = models.TextField(default="", null=True)
     image = models.ImageField(upload_to='category_images/', blank=True, null=True)  # Adjust as needed
 
     def __str__(self):
@@ -56,7 +56,7 @@ class Category(models.Model):
 
 class SubCategory(models.Model):
     name = models.CharField(max_length=100)
-    description = models.TextField()
+    description = models.TextField(default="", null=True)
     image = models.ImageField(upload_to='subcategory_images/', blank=True, null=True)  # Subcategory image
     category = models.ForeignKey(Category, related_name='subcategories', on_delete=models.CASCADE)
     price = models.CharField(max_length=100, null=True, blank=True)
@@ -65,7 +65,7 @@ class SubCategory(models.Model):
 
 class SubSubCategory(models.Model):
     name = models.CharField(max_length=100)
-    description = models.TextField()
+    description = models.TextField(default="", null=True)
     image = models.ImageField(upload_to='subsubcategory_images/', blank=True, null=True)  # Sub-subcategory image
     subcategory = models.ForeignKey(SubCategory, related_name='subsubcategories', on_delete=models.CASCADE)
     price = models.CharField(max_length=100, null=True, blank=True)
@@ -74,7 +74,7 @@ class SubSubCategory(models.Model):
 
 class SubSubSubCategory(models.Model):
     name = models.CharField(max_length=100)
-    description = models.TextField()
+    description = models.TextField(default="", null=True)
     image = models.ImageField(upload_to='subsubsubcategory_images/', blank=True, null=True)  # Sub-subcategory image
     subsubcategory = models.ForeignKey(SubSubCategory, related_name='subsubsubcategories', on_delete=models.CASCADE)
     price = models.CharField(max_length=100)

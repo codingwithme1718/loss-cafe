@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-
+{% load static %}
 {% block content %}
     <div class="row category">
         {% for subsubsubcategory in subsubsubcategories %}
@@ -8,14 +8,21 @@
                     <div class="card-img-container" style="position: relative; width: 100%; padding-top: 75%;">
                         <img
                             class="card-img-top"
-                            src="{{ subsubsubcategory.image.url }}"
+                            src="{% if subsubsubcategory.image %}{{ subsubsubcategory.image.url }}{% else %}/media/loss_cafe_default.png{% endif %}"
                             alt="{{ subsubsubcategory.name }}"
                             style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;"
                         />
                     </div>
                     <div class="card-body d-flex flex-column" style="color: wheat !important;">
                         <h5 class="card-title" style="font-weight: bold;">{{ subsubsubcategory.name }}</h5>
-                        <p class="card-text">{{ subsubsubcategory.description }}</p>
+			{% if subsubsubcategory.price %}
+                            <div class="d-flex justify-content-between align-items-center">
+                                <p class="card-text">{{ subsubsubcategory.description }}</p>
+                                <p class="card-text mb-0" style="font-weight: bold;">{{ subsubsubcategory.price }}</p>
+                            </div>
+                        {% else %}
+                            <p class="card-text">{{ subsubsubcategory.description }}</p>
+                        {% endif %}
                     </div>
                 </div>
             </div>
