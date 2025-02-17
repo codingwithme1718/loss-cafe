@@ -1,6 +1,17 @@
 {% extends "base.html" %}
 
 {% block content %}
+
+    <!-- Fixed Video at the Center Top -->
+    <div id="fixedVideo" class="fixed-video">
+        <video id="customVideo" autoplay muted controls>
+            <source src="/media/videoplayback.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        <span class="close" onclick="closeVideo()">&times;</span>
+    </div>
+
+    <!-- Categories Section -->
     <div class="row category">
         {% for category in categories %}
             <div class="col-md-3 col-lg-2">         
@@ -23,4 +34,61 @@
             </div>
         {% endfor %}
     </div>
+
+    <!-- CSS for Fixed Video -->
+    <style>
+        .fixed-video {
+            position: fixed;
+            top: 75px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 560px;
+            height: 315px;
+            background: black;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            padding: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .fixed-video video {
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+        }
+
+        .close {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            font-size: 20px;
+            color: white;
+            background: #0e733b;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            text-align: center;
+            line-height: 30px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
+
+    <!-- JavaScript for Auto-Open and Close Video -->
+    <script>
+        window.onload = function() {
+            document.getElementById("fixedVideo").style.display = "flex"; // Show the video on page load
+        };
+
+        function closeVideo() {
+            var video = document.getElementById("fixedVideo");
+            var videoTag = document.getElementById("customVideo");
+            video.style.display = "none"; // Hide the video container
+            videoTag.pause(); // Stop the video when closed
+        }
+    </script>
+
 {% endblock %}

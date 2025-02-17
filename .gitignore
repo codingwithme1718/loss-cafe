@@ -1,0 +1,28 @@
+# Ignore compiled Python files
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+
+# Ignore environment variables and virtual environments
+.env
+*.env
+venv/
+.envrc
+
+# Ignore Django-related files
+db.sqlite3
+db.sqlite3-journal
+*.log
+
+# Ignore static and media files
+staticfiles/
+
+# Ignore IDE/editor-specific files
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Ignore dependencies
+node_modules/
