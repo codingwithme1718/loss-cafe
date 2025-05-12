@@ -4,6 +4,16 @@
 *.pyd
 __pycache__/
 
+
+
+# Ignore Python bytecode files
+*.pyc
+__pycache__/
+
+# Optionally, ignore Dockerfile and other build-related files if you don't want to commit them
+Dockerfile
+
+
 # Ignore environment variables and virtual environments
 .env
 *.env

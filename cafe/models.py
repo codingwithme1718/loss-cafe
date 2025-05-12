@@ -50,6 +50,9 @@ class Category(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(default="", null=True)
     image = models.ImageField(upload_to='category_images/', blank=True, null=True)  # Adjust as needed
+    order = models.PositiveIntegerField(default=0)  # Used for manual sorting
+    class Meta:
+        ordering = ['order']
 
     def __str__(self):
         return self.name
