@@ -50,6 +50,8 @@ __pycache__/
 *.gz
 node_modules/
 
+media/
+media
 
 # Ignore compiled files
 __pycache__/
