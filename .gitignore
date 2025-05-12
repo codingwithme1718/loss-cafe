@@ -36,3 +36,17 @@ staticfiles/
 
 # Ignore dependencies
 node_modules/
+
+
+
+__pycache__/
+*.pyc
+*.log
+*.sqlite3
+.env
+*.bak
+*.zip
+*.tar
+*.gz
+node_modules/
+
