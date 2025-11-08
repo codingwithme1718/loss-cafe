@@ -5,16 +5,6 @@
 
     <!-- Categories Section -->
     <div class="row category">
-	    <div class="col-md-3 col-lg-2">
-                  <!-- Fixed Video at the Center Top -->
-                <div id="fixedVideo" class="fixed-video">
-		  <video autoplay muted playsinline loop controls>
-                     <source src="/media/videoplayback.mp4" type="video/mp4">
-                  </video>
-                 <span class="close" onclick="closeVideo()">&times;</span>
-            </div>
-		
-	    </div>
         {% for category in categories %}
             <div class="col-md-3 col-lg-2">         
                 <a href="{% url 'subcategory-list' category.id %}" class="text-decoration-none" style="cursor: pointer;">
