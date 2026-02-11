@@ -54,6 +54,27 @@ media/
 media
 media2
 media2/
+# images
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.svg
+
+# media folders
+media/
+uploads/
+images/
+
+# cache / python
+__pycache__/
+*.pyc
+
+# env
+.env
+venv/
+
 
 # Ignore compiled files
 __pycache__/
