@@ -1,37 +1,45 @@
 {% extends "base.html" %}
 {% load static %}
 {% block content %}
-    <div class="row category">
-        {% for subcategory in subcategories %}
-	        <div class="col-md-3 col-lg-2">
-                {% if not subcategory.price %}
-                    <a href="{% url 'subsubcategory-list' subcategory.id %}" class="text-decoration-none" style="cursor: pointer;">
-                {% endif %} 
-                    <div class="card h-100"> 
-                        <div class="card-img-container" style="position: relative; width: 100%; padding-top: 75%;">
-                            <img
-                                class="card-img-top"
-                                src="{% if subcategory.image %}{{ subcategory.image.url }}{% else %}/media/loss_cafe_default.png{% endif %}"
-                                alt="{{ subcategory.name }}"
-                                style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;"
-                            />
+<div class="row category">
+    {% for subcategory in subcategories %}
+        <div class="col-md-3 col-lg-2">
+
+            {% if not subcategory.price %}
+                <!-- No price: go to next page -->
+                <a href="{% url 'subsubcategory-list' subcategory.id %}" class="text-decoration-none" style="cursor: pointer;">
+            {% endif %}
+
+            <div class="card h-100"> 
+                <div class="card-img-container" style="position: relative; width: 100%; padding-top: 75%;">
+                    <img
+                        class="card-img-top {% if subcategory.price %}open-viewer{% endif %}"
+                        src="{% if subcategory.image %}{{ subcategory.image.url }}{% else %}/media/loss_cafe_default.png{% endif %}"
+                        alt="{{ subcategory.name }}"
+                        style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; cursor: {% if subcategory.price %}zoom-in{% else %}pointer{% endif %};"
+                    />
+                </div>
+
+                <div class="card-body d-flex flex-column" style="color: wheat !important;">
+                    <h5 class="card-title" style="font-weight: bold;">{{ subcategory.name }}</h5>
+
+                    {% if subcategory.price %}
+                        <div class="d-flex justify-content-between align-items-center">
+                            <p class="card-text">{{ subcategory.description }}</p>
+                            <p class="card-text mb-0" style="font-weight: bold;">{{ subcategory.price }}</p>
                         </div>
-                        <div class="card-body d-flex flex-column" style="color: wheat !important;">
-                            <h5 class="card-title" style="font-weight: bold;">{{ subcategory.name }}</h5>
-                            {% if subcategory.price %}
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <p class="card-text">{{ subcategory.description }}</p>
-                                    <p class="card-text mb-0" style="font-weight: bold;">{{ subcategory.price }}</p>
-                                </div>
-                            {% else %}
-                                <p class="card-text">{{ subcategory.description }}</p>
-                            {% endif %}
-                        </div>
-                    </div>
-                {% if not subsubcategory.price %}
-                    </a>
-                {% endif %}
+                    {% else %}
+                        <p class="card-text">{{ subcategory.description }}</p>
+                    {% endif %}
+                </div>
             </div>
-        {% endfor %}
-    </div>
+
+            {% if not subcategory.price %}
+                </a>
+            {% endif %}
+
+        </div>
+    {% endfor %}
+</div>
 {% endblock %}
+

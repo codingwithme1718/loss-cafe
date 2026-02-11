@@ -176,8 +176,8 @@
 
       @media (max-width: 500px) {
         .fixed-video {
-	  width: 90% !important;
-          height: 250px !important;
+          top: 220px !important;
+          width: 80% !important;
         }
         #backButton{
           display: inline-block !important;
@@ -360,9 +360,40 @@
         </div>
       </div>
     </footer>
+    <!-- ✅ GLOBAL IMAGE ZOOM VIEWER -->
+    <style>
+      .image-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); backdrop-filter: blur(6px); justify-content: center; align-items: center; z-index: 9999;}
+      .modal-content-img { max-width: 75vw; max-height: 75vh; border-radius: 18px; cursor: zoom-out; transform: scale(0.55) translateY(20px); opacity: 0; animation: popZoom 0.45s cubic-bezier(.21,1.05,.45,1.21) forwards;}
+      @keyframes popZoom { 0% { transform: scale(.55) translateY(20px); opacity:0;} 60%{transform:scale(1.08) translateY(0);opacity:1;}100%{transform:scale(1);opacity:1;}}
+      .image-modal.closing .modal-content-img { animation: fadeOut .28s ease forwards;}
+      @keyframes fadeOut { from { transform: scale(1);opacity:1;} to {transform:scale(.7);opacity:0;} }
+    </style>
+
+    <div id="image-modal" class="image-modal">
+      <img id="modal-img" class="modal-content-img">
+    </div>
+
+    <script>
+      const modal = document.getElementById("image-modal");
+      const modalImg = document.getElementById("modal-img");
+
+      document.addEventListener("click", e => {
+        if (e.target.classList.contains("open-viewer")) {
+          modalImg.src = e.target.src;
+          modal.style.display = "flex";
+        }
+      });
+
+      modal.addEventListener("click", () => {
+        modal.classList.add("closing");
+        setTimeout(() => { modal.style.display = "none"; modal.classList.remove("closing"); }, 250);
+      });
+    </script>
+
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   </body>
 </html>
+

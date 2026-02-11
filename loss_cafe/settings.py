@@ -14,7 +14,7 @@ SECRET_KEY = 'django-insecure-)1_8$l1(6*)!&p9=e2&=7r1c89#idvahly+664j3f**u+%3e40
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["24.199.126.247", "losscafe.com.tr", "www.losscafe.com.tr"]
+ALLOWED_HOSTS = ["nimlab.eu", "24.199.126.247", "losscafe.com.tr", "www.losscafe.com.tr"]
 
 
 # Application definition

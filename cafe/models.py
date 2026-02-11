@@ -51,6 +51,7 @@ class Category(models.Model):
     description = models.TextField(default="", null=True)
     image = models.ImageField(upload_to='category_images/', blank=True, null=True)  # Adjust as needed
     order = models.PositiveIntegerField(default=0)  # Used for manual sorting
+
     class Meta:
         ordering = ['order']
 
@@ -63,6 +64,10 @@ class SubCategory(models.Model):
     image = models.ImageField(upload_to='subcategory_images/', blank=True, null=True)  # Subcategory image
     category = models.ForeignKey(Category, related_name='subcategories', on_delete=models.CASCADE)
     price = models.CharField(max_length=100, null=True, blank=True)
+    order = models.PositiveIntegerField(default=0)  # Used for manual sorting
+
+    class Meta:
+        ordering = ['order']
     def __str__(self):
         return self.name
 
@@ -72,6 +77,11 @@ class SubSubCategory(models.Model):
     image = models.ImageField(upload_to='subsubcategory_images/', blank=True, null=True)  # Sub-subcategory image
     subcategory = models.ForeignKey(SubCategory, related_name='subsubcategories', on_delete=models.CASCADE)
     price = models.CharField(max_length=100, null=True, blank=True)
+    order = models.PositiveIntegerField(default=0)  # Used for manual sorting
+
+    class Meta:
+        ordering = ['order']
+
     def __str__(self):
         return self.name
 
@@ -81,5 +91,10 @@ class SubSubSubCategory(models.Model):
     image = models.ImageField(upload_to='subsubsubcategory_images/', blank=True, null=True)  # Sub-subcategory image
     subsubcategory = models.ForeignKey(SubSubCategory, related_name='subsubsubcategories', on_delete=models.CASCADE)
     price = models.CharField(max_length=100)
+    order = models.PositiveIntegerField(default=0)  # Used for manual sorting
+
+    class Meta:
+        ordering = ['order']
+
     def __str__(self):
         return self.name

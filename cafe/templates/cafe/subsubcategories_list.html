@@ -1,37 +1,45 @@
 {% extends "base.html" %}
 {% load static %}
 {% block content %}
-    <div class="row category">
-        {% for subsubcategory in subsubcategories %}
-	        <div class="col-md-3 col-lg-2"> 
-                {% if not subsubcategory.price %}
-                    <a href="{% url 'subsubsubcategory-list' subcategory.id subsubcategory.id %}" class="text-decoration-none" style="cursor: pointer;">
-                {% endif %}
-                <div class="card h-100"> 
-                    <div class="card-img-container" style="position: relative; width: 100%; padding-top: 75%;">
-                        <img
-                            class="card-img-top"
-                            src="{% if subsubcategory.image %}{{ subsubcategory.image.url }}{% else %}/media/loss_cafe_default.png{% endif %}"
-                            alt="{{ subsubcategory.name }}"
-                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;"
-                        />
-                    </div>
-                    <div class="card-body d-flex flex-column" style="color: wheat !important;">
-                        <h5 class="card-title" style="font-weight: bold;">{{ subsubcategory.name }}</h5>
-			{% if subsubcategory.price %}
-                            <div class="d-flex justify-content-between align-items-center">
-                                <p class="card-text">{{ subsubcategory.description }}</p>
-                                <p class="card-text mb-0" style="font-weight: bold;">{{ subsubcategory.price }}</p>
-                            </div>
-                        {% else %}
-                            <p class="card-text">{{ subsubcategory.description }}</p>
-                        {% endif %}
-                    </div>
+<div class="row category">
+    {% for subsubcategory in subsubcategories %}
+        <div class="col-md-3 col-lg-2">
+
+            {% if not subsubcategory.price %}
+                <!-- No price: go to next page -->
+                <a href="{% url 'subsubsubcategory-list' subcategory.id subsubcategory.id %}" class="text-decoration-none" style="cursor: pointer;">
+            {% endif %}
+
+            <div class="card h-100"> 
+                <div class="card-img-container" style="position: relative; width: 100%; padding-top: 75%;">
+                    <img
+                        class="card-img-top {% if subsubcategory.price %}open-viewer{% endif %}"
+                        src="{% if subsubcategory.image %}{{ subsubcategory.image.url }}{% else %}/media/loss_cafe_default.png{% endif %}"
+                        alt="{{ subsubcategory.name }}"
+                        style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; cursor: {% if subsubcategory.price %}zoom-in{% else %}pointer{% endif %};"
+                    />
                 </div>
-                {% if not subsubcategory.price %}
-                    </a>
-                {% endif %}
+
+                <div class="card-body d-flex flex-column" style="color: wheat !important;">
+                    <h5 class="card-title" style="font-weight: bold;">{{ subsubcategory.name }}</h5>
+
+                    {% if subsubcategory.price %}
+                        <div class="d-flex justify-content-between align-items-center">
+                            <p class="card-text">{{ subsubcategory.description }}</p>
+                            <p class="card-text mb-0" style="font-weight: bold;">{{ subsubcategory.price }}</p>
+                        </div>
+                    {% else %}
+                        <p class="card-text">{{ subsubcategory.description }}</p>
+                    {% endif %}
+                </div>
             </div>
-        {% endfor %}
-    </div>
+
+            {% if not subsubcategory.price %}
+                </a>
+            {% endif %}
+
+        </div>
+    {% endfor %}
+</div>
 {% endblock %}
+
