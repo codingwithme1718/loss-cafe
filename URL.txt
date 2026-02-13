@@ -5,10 +5,10 @@ Admin paneli:         http://localhost:8000/admin/
 
 --- MENÜ API (JSON, CORS açık) ---
 
-1) Tam menü (ağaç yapısı):
+1) HİYERARŞİK MENÜ (Category > Sub > SubSub > SubSubSub) - SİSTEMDE BÖYLE KULLAN:
    GET /api/menu/
    Örnek: https://losscafe.com.tr/api/menu/
-   Döner: categories -> subcategories -> subsubcategories -> subsubsubcategories
+   Yapı: Category → subcategories[] → subsubcategories[] → subsubsubcategories[]
    Her seviyede: id, name, description, price, image_url, order
 
 2) Düz liste (tüm itemlar tek listede):

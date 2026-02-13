@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import search_subsubcategory, MenuView, SubCategoryListView, SubSubCategoryListView, SubSubSubCategoryListView
-from .api_views import api_menu_full, api_menu_flat, api_chat_suggest
+from .api_views import api_menu_full, api_menu_flat, api_chat_suggest, api_test_groq
 
 urlpatterns = [
     path('', MenuView.as_view(), name='category_list'),  # Use as_view() here
@@ -12,4 +12,5 @@ urlpatterns = [
     path('api/menu/', api_menu_full),
     path('api/menu/flat/', api_menu_flat),
     path('api/chat/suggest/', api_chat_suggest),
+    path('api/test_groq/', api_test_groq),
 ]

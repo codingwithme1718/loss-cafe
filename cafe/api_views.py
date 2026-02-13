@@ -121,6 +121,46 @@ def _build_flat_menu(request=None):
     return items
 
 
+def _get_default_suggestions(items, n=8):
+    """Kategorilerden karışık öneri - her kategoriden sırayla al."""
+    from collections import defaultdict
+    by_cat = defaultdict(list)
+    for i in items:
+        cat = i.get('category') or 'Diğer'
+        by_cat[cat].append(i)
+    result = []
+    cats = list(by_cat.keys())
+    idx = 0
+    while len(result) < n and idx < 30:
+        for c in cats:
+            if len(by_cat[c]) > idx and len(result) < n:
+                result.append(by_cat[c][idx])
+        idx += 1
+    return result[:n] if result else items[:n]
+
+
+def _build_menu_for_groq(items, max_per_cat=40):
+    """DB'den: Category > SubCategory > SubSubCategory > SubSubSubCategory hiyerarşisi."""
+    from collections import defaultdict
+    by_cat = defaultdict(list)
+    for i in items:
+        by_cat[i.get('category') or 'Diğer'].append(i)
+    lines = []
+    for cat_name in sorted(by_cat.keys()):
+        lines.append(f"\n=== {cat_name} ===")
+        cat_items = by_cat[cat_name][:max_per_cat]
+        for i in cat_items:
+            path = [i.get('subcategory'), i.get('subsubcategory')]
+            path = [p for p in path if p]
+            path_str = ' > '.join(path) if path else ''
+            name_price = f"{i.get('name')} - {i.get('price')}"
+            if path_str:
+                lines.append(f"  {path_str}: {name_price}")
+            else:
+                lines.append(f"  {name_price}")
+    return '\n'.join(lines).strip()
+
+
 def _api_response(data):
     """JSON response with CORS headers for external access."""
     r = JsonResponse(data)
@@ -161,7 +201,28 @@ DRINK_CATEGORIES = {'sıcak içecekler', 'soğuk içecekler', 'meyve suları', '
 # Alkollü içecek kategorisi (bira, şarap vb.)
 ALCOHOL_CATEGORY = 'alkollü içecekler'
 # Alkollü arama kelimeleri (alkollu/alkolu yazım varyantları)
-ALCOHOL_KEYWORDS = {'bira', 'biralar', 'alkol', 'alkollü', 'alkolu', 'alkollu', 'şarap', 'şaraplar', 'kokteyl', 'kokteyller', 'viski', 'rakı', 'votka', 'cin'}
+ALCOHOL_KEYWORDS = {'bira', 'biralar', 'alkol', 'alkollü', 'alkolu', 'alkollu', 'şarap', 'şaraplar', 'kokteyl', 'kokteyller', 'viski', 'rakı', 'votka', 'cin', 'tekila', 'tequila', 'mimoza'}
+
+# Menü subcategory eşlemesi (api/menu/flat verisine göre)
+MENU_SUBCAT_MAP = [
+    ('burger', 'burgerler'),
+    ('pizza', 'pizzalar'),
+    ('bira', 'biralar'),
+    ('kahve', 'dunya kahveleri'),
+    ('çay', 'caylar'),
+    ('cay', 'caylar'),
+    ('makarna', 'makarnalar'),
+    ('salata', 'salatalar'),
+    ('tatlı', 'tatlilar'),
+    ('tatli', 'tatlilar'),
+    ('tavuk', 'tavuk yemekleri'),
+    ('et ', 'et yemekleri'),
+    ('köfte', 'et yemekleri'),
+    ('kokteyl', 'alkollu icecekler'),
+    ('viski', 'alkollu icecekler'),
+    ('şarap', 'alkollu icecekler'),
+    ('sarap', 'alkollu icecekler'),
+]
 # Tatlı içecekler (isimde geçen - öncelik sırası)
 SWEET_DRINK_NAMES = ['mocha', 'çikolata', 'limonata', 'smoothie', 'buzlu latte', 'mango', 'çilek', 'portakal', 'elma', 'havuç', 'latte', 'cappuccino', 'mojito']
 
@@ -219,7 +280,7 @@ def _get_chat_suggestions(message, context_hint=''):
         if not alcohol_items:
             alcohol_items = [i for i in items if any(
                 kw in _cat_norm(i.get('name', '')) + _cat_norm(i.get('subcategory', ''))
-                for kw in ['bira', 'sarap', 'kokteyl', 'raki', 'votka', 'viski', 'cin']
+                for kw in ['bira', 'sarap', 'kokteyl', 'raki', 'votka', 'viski', 'cin', 'tekila', 'tequila', 'mimoza']
             )]
         if alcohol_items:
             return alcohol_items[:8], None
@@ -281,55 +342,51 @@ def _check_ambiguity(message):
 
 
 def _ai_chat(user_msg, prev_msg, history, api_key):
-    """Groq AI ile doğal dil anlama. DB: Category > SubCategory > SubSubCategory > SubSubSubCategory."""
+    """
+    Groq - tek giriş noktası. Key varsa her şeyi halleder.
+    DB'den menü alır, Groq'a gönderir, cevabı döner.
+    """
     from groq import Groq
     items = _build_flat_menu(None)
-    # Tam hiyerarşi: Kategori > Alt > Alt Alt > Ürün - Fiyat
-    menu_lines = []
-    for i in items[:80]:
-        path = [i.get('category'), i.get('subcategory'), i.get('subsubcategory')]
-        path = [p for p in path if p]
-        path_str = ' > '.join(path) if path else i.get('category', '')
-        menu_lines.append(f"- {path_str}: {i.get('name')} - {i.get('price')}")
-    menu_text = '\n'.join(menu_lines)
-    system = f"""Sen Loss Cafe'nin profesyonel menü asistanısın. Sadece aşağıdaki menüden öneri yapıyorsun.
+    menu_text = _build_menu_for_groq(items)
+    msg_norm = _normalize_for_match((user_msg or '').lower())
 
-MENÜ (Kategori > Alt Kategori > Ürün - Fiyat):
+    # Kategori ipucu: "burger" → sadece BURGERLER, "pizza" → PİZZALAR vb.
+    cat_hint = ''
+    for kw, subcat_norm in MENU_SUBCAT_MAP:
+        if kw in msg_norm:
+            cat_hint = f'\nÖNEMLİ: Kullanıcı "{kw}" istiyor. ÖNERİLERİ SADECE "{subcat_norm.upper()}" kategorisinden seç. Başka kategoriden ürün YAZMA.'
+            if kw == 'burger' and ('tavuk' in msg_norm or 'chicken' in msg_norm):
+                cat_hint += ' Tavuklu/chicken burgerlerden öner (CHICKEN BURGER, CHICKEN CHEESE BURGER vb.).'
+            break
+
+    system = f"""Sen Loss Cafe'de çalışan samimi bir garson gibisin. Normal, doğal konuş.
+
+MENÜ (DB - menü sorulunca BURADAN öner):
 {menu_text}
+{cat_hint}
 
-KURALLAR (kesin uygula):
-1. Her zaman menüden 2-6 ürün öner. Asla "bulamadım", "tam uyan ürün yok" deme.
-2. Benzer eşleşme yeterli: "kahve" → Türk Kahvesi, Latte, Mocha; "tatlı" → pasta, cheesecake, brownie.
-3. Öneri varsa: Kısa samimi cümle + "ÖNERİLER:" + JSON array ["Ürün Adı1", "Ürün Adı2"] (sadece menüdeki tam isimler).
-4. "başka", "farklı" derse: Farklı kategoriden öner (örn. içecekten yemeğe geç).
-5. Cevabın sıcak ve profesyonel olsun. Kısa tut.
+SOHBET (nasılsın, selam, teşekkür, naber):
+- Sadece 1-2 cümle normal cevap ver. "İyiyim, sen nasılsın?" gibi.
+- ÖNERİLER, liste, köşeli parantez [ ] ASLA yazma. Sadece konuş.
+
+MENÜ SORUSU (burger öner, ne var, bira istiyorum vb.):
+- Kısa cevap + "ÖNERİLER:" + ["Ürün1", "Ürün2"] (menüdeki TAM isimler, max 8).
 """
     messages = [{"role": "system", "content": system}]
-    for h in history[-6:]:  # Son 6 mesaj
-        messages.append({"role": h.get("role", "user"), "content": h.get("content", "")[:200]})
+    for h in history[-8:]:  # Son 8 mesaj - sohbet akışı için
+        messages.append({"role": h.get("role", "user"), "content": (h.get("content", "") or "")[:350]})
     if prev_msg:
         messages.append({"role": "user", "content": prev_msg[:150]})
         messages.append({"role": "assistant", "content": "[Önceki öneri verildi]"})
     messages.append({"role": "user", "content": user_msg})
     client = Groq(api_key=api_key)
-    models = ["llama-3.1-8b-instant", "llama-3.3-70b-versatile"]
-    resp = None
-    last_err = None
-    for model in models:
-        try:
-            resp = client.chat.completions.create(
-                model=model,
-                messages=messages,
-                max_tokens=500,
-                temperature=0.2,
-            )
-            break
-        except Exception as e:
-            last_err = e
-            logger.info("Groq model %s başarısız, sonraki deneniyor: %s", model, str(e))
-            continue
-    if resp is None:
-        raise last_err or Exception("Groq API yanıt vermedi")
+    resp = client.chat.completions.create(
+        model="llama-3.1-8b-instant",
+        messages=messages,
+        max_tokens=350,
+        temperature=0.4,
+    )
     text = (resp.choices[0].message.content or "").strip()
     suggestions = []
     if "ÖNERİLER:" in text:
@@ -349,9 +406,61 @@ KURALLAR (kesin uygula):
                         break
         except Exception:
             pass
+
+    # Groq yanlış kategori döndürdüyse düzelt: "burger" dediyse sadece burgerler
+    if suggestions and cat_hint:
+        for kw, subcat_norm in MENU_SUBCAT_MAP:
+            if kw in msg_norm:
+                filtered = [
+                    i for i in suggestions
+                    if subcat_norm in _normalize_for_match(i.get('subcategory') or '')
+                    or subcat_norm in _normalize_for_match(i.get('subsubcategory') or '')
+                    or subcat_norm in _normalize_for_match(i.get('category') or '')
+                ]
+                if kw == 'burger' and ('tavuk' in msg_norm or 'chicken' in msg_norm):
+                    filtered = [i for i in filtered if 'tavuk' in _normalize_for_match(i.get('name') or '') or 'chicken' in (i.get('name') or '').lower()]
+                if filtered:
+                    suggestions = filtered[:8]
+                break
+
+    # Mesaj temizliği: Groq bazen "[", "]" kalıntısı bırakıyor
+    text = re.sub(r'\s*\[.*$', '', text).strip()
+    text = re.sub(r'\s*\]\s*$', '', text).strip()
+
     if suggestions:
-        return {"success": True, "message": text, "suggestions": suggestions}
+        return {"success": True, "greeting": False, "message": text, "suggestions": suggestions}
     return {"success": True, "greeting": True, "message": text, "suggestions": []}
+
+
+@require_GET
+def api_test_groq(request):
+    """GET /api/test_groq/ - Groq API bağlantısını test et."""
+    api_key = (os.environ.get('GROQ_API_KEY') or '').strip()
+    if not api_key:
+        return _api_response({
+            'success': False,
+            'error': 'GROQ_API_KEY ortam değişkeni tanımlı değil',
+        })
+    try:
+        from groq import Groq
+        client = Groq(api_key=api_key)
+        resp = client.chat.completions.create(
+            model='llama-3.1-8b-instant',
+            messages=[{'role': 'user', 'content': 'Merhaba, kısaca kendini tanıt.'}],
+            max_tokens=100,
+        )
+        text = (resp.choices[0].message.content or '').strip()
+        return _api_response({
+            'success': True,
+            'message': text,
+            'model': resp.model,
+        })
+    except Exception as e:
+        logger.exception("test_groq hatası")
+        return _api_response({
+            'success': False,
+            'error': str(e),
+        })
 
 
 @csrf_exempt
@@ -359,7 +468,8 @@ KURALLAR (kesin uygula):
 def api_chat_suggest(request):
     """
     POST /api/chat/suggest
-    Önce rule-based (menüden arama), Groq sadece fallback.
+    GROQ_API_KEY varsa → Groq her şeyi halleder (sohbet + menü önerisi).
+    Key yoksa → basit fallback.
     """
     try:
         body = json.loads(request.body or '{}')
@@ -370,64 +480,23 @@ def api_chat_suggest(request):
         msg = ''
         prev = ''
 
-    msg_lower = msg.lower().strip()
-    items = _build_flat_menu(None)
-
-    # 1. Selamlaşma -> menüden 8 öneri
-    greetings = ['selam', 'selamlar', 'merhaba', 'hey', 'hi', 'günaydın', 'iyi akşamlar', 'naber', 'nasılsın', 'slm', 'selamun aleyküm']
-    if not msg or msg_lower in greetings or (len(msg.split()) <= 3 and any(g in msg_lower for g in greetings)):
-        return _api_response({
-            'success': True, 'greeting': True,
-            'message': 'Merhaba! Hoş geldiniz 😊 Ne yemek veya içmek istersiniz?',
-            'suggestions': items[:8],
-        })
-
-    # 2. Teşekkür
-    thanks_words = ['teşekkür', 'sağol', 'sağolun', 'eyvallah']
-    if len(msg.split()) <= 4 and any(t in msg_lower for t in thanks_words):
-        return _api_response({
-            'success': True, 'greeting': True,
-            'message': 'Rica ederim! Afiyet olsun. Başka bir şey isterseniz yazmanız yeterli 😊',
-            'suggestions': items[:6],
-        })
-
-    # 3. Groq ÖNCELİKLİ (API key varsa)
     api_key = (os.environ.get('GROQ_API_KEY') or '').strip()
+
     if api_key:
         try:
             history = body.get('history', [])
-            ai_result = _ai_chat(msg, prev, history, api_key)
-            msg_text = ai_result.get('message', 'İşte size birkaç öneri 😊')
-            sug = ai_result.get('suggestions', [])
-            if not sug:
-                sug, _ = _get_chat_suggestions(msg, '')
-            if not sug:
-                sug = items[:8]
+            result = _ai_chat(msg, prev, history, api_key)
             return _api_response({
                 'success': True,
-                'message': msg_text,
-                'suggestions': sug[:8],
+                'greeting': result.get('greeting', False),
+                'message': result.get('message', 'Size nasıl yardımcı olabilirim?'),
+                'suggestions': result.get('suggestions', [])[:8],
             })
         except Exception as e:
-            logger.warning("Groq chat hatası, rule-based fallback: %s", str(e))
-
-    # 4. Groq yok/hatalı: rule-based (içecek, bira, kahve vb.)
-    suggestions, _ = _get_chat_suggestions(msg, '')
-    if suggestions:
-        if any(_normalize_for_match(w) in _normalize_for_match(msg_lower) for w in ALCOHOL_KEYWORDS):
-            return _api_response({
-                'success': True,
-                'message': 'İşte alkollü içeceklerimizden birkaç öneri 😊',
-                'suggestions': suggestions[:8],
-            })
-        return _api_response({
-            'success': True,
-            'message': 'İşte size birkaç öneri 😊',
-            'suggestions': suggestions[:8],
-        })
+            logger.warning("Groq hatası: %s", str(e))
 
     return _api_response({
         'success': True,
-        'message': 'İşte size birkaç lezzetli seçenek 😊',
-        'suggestions': items[:8],
+        'message': 'Ne yemek veya içmek istersiniz? Menüden size önerebilirim 😊',
+        'suggestions': [],
     })

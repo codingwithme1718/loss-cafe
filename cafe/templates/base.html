@@ -586,7 +586,7 @@
         function reply(userText, prevMsg) {
           prevMsg = prevMsg || lastUserMsg;
           lastUserMsg = userText;
-          addMsg('Hmm, bir bakayım menüye...', false);
+          addMsg('...', false);
           var lastBot = messages.lastElementChild;
           var body = {message: userText, previous_message: prevMsg, history: convHistory.slice(-8)};
           fetch('/api/chat/suggest/', {
@@ -602,8 +602,11 @@
               return;
             }
             if (d && d.message && (d.suggestions || []).length > 0) {
-              var txt = d.message + '\n\n';
-              d.suggestions.forEach(function(s) { txt += '• ' + (s.name || '') + (s.price ? ' - ' + s.price : '') + '\n'; });
+              var txt = d.message;
+              if (d.suggestions.length) {
+                txt += '\n\n';
+                d.suggestions.forEach(function(s) { txt += '• ' + (s.name || '') + (s.price ? ' - ' + s.price : '') + '\n'; });
+              }
               addMsg(txt.trim(), false);
               convHistory.push({role: 'assistant', content: txt});
               return;
@@ -617,13 +620,12 @@
               return;
             }
             var suggestions = (d && d.suggestions) || [];
-            var txt = (d && d.message) ? d.message : 'İşte size birkaç öneri 😊';
+            var txt = (d && d.message) ? d.message : '';
             if (suggestions.length) {
-              txt += '\n\n';
+              if (txt) txt += '\n\n';
               suggestions.forEach(function(s) { txt += '• ' + (s.name || '') + (s.price ? ' - ' + s.price : '') + '\n'; });
-              txt += '\nBaşka bir şey isterseniz yazmanız yeterli 😊';
             }
-            addMsg(txt.trim(), false);
+            addMsg(txt.trim() || 'Ne istersiniz?', false);
             convHistory.push({role: 'assistant', content: txt});
           }).catch(function(){
             lastBot.remove();
@@ -631,7 +633,7 @@
           });
         }
         function replyWithContext(userText, prevMsg) {
-          addMsg('Tamam, hemen bakıyorum...', false);
+          addMsg('...', false);
           var lastBot = messages.lastElementChild;
           fetch('/api/chat/suggest/', {
             method: 'POST',
@@ -640,13 +642,12 @@
           }).then(function(r){ return r.json(); }).then(function(d){
             lastBot.remove();
             var suggestions = (d && d.suggestions) || [];
-            var txt = (d && d.message) ? d.message : 'İşte tam size göre:\n\n';
+            var txt = (d && d.message) ? d.message : '';
             if (suggestions.length) {
-              txt += '\n\n';
+              if (txt) txt += '\n\n';
               suggestions.forEach(function(s) { txt += '• ' + (s.name || '') + (s.price ? ' - ' + s.price : '') + '\n'; });
-              txt += '\nAfiyet olsun! Başka bir şey isterseniz söylemeniz yeterli 😊';
             }
-            addMsg(txt.trim(), false);
+            addMsg(txt.trim() || 'Ne istersiniz?', false);
           }).catch(function(){
             lastBot.remove();
             addMsg('Üzgünüm, bir sorun oluştu. Lütfen tekrar deneyin.', false);
