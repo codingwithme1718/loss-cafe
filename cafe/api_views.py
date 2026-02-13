@@ -184,8 +184,16 @@ AMBIGUOUS = {
 }
 
 
+# Türkçe karakter normalizasyonu (icecek=içecek, bira eşleşmesi için)
+_TR_NORM = str.maketrans('ıİğüşöçĞÜŞİÖÇ', 'iigusocGUSIOC')
+def _normalize_for_match(text):
+    if not text:
+        return ''
+    t = (text or '').lower().translate(_TR_NORM)
+    return t.replace('\u0307', '')  # İ.lower() -> i+combining dot, temizle
+
 def _extract_keywords(text):
-    text = (text or '').lower() 
+    text = (text or '').lower()
     text = re.sub(r'[^\wğüşıöçĞÜŞİÖÇ\s]', ' ', text)
     return [w for w in text.split() if len(w) > 1 and w not in STOPWORDS]
 
@@ -193,47 +201,53 @@ def _extract_keywords(text):
 def _get_chat_suggestions(message, context_hint=''):
     """context_hint: netleştirme cevabından gelen ek anahtar kelimeler."""
     full_msg = (message + ' ' + context_hint).strip().lower()
+    full_norm = _normalize_for_match(full_msg)
     items = _build_flat_menu(None)
     words = _extract_keywords(full_msg)
     if not words:
         return items[:8], None
 
-    # "alkollü içecek istiyorum" / "bira öner" / "şarap" = Alkollü İçecekler kategorisinden
-    want_alcohol = any(w in full_msg for w in ALCOHOL_KEYWORDS) or (
-        ('alkol' in full_msg or 'alkoll' in full_msg) and ('içecek' in full_msg or 'icecek' in full_msg)
+    def _cat_norm(c):
+        return _normalize_for_match(c or '')
+
+    # "alkollü içecek" / "bira" / "şarap" = Alkollü İçecekler
+    want_alcohol = any(_cat_norm(w) in full_norm for w in ALCOHOL_KEYWORDS) or (
+        ('alkol' in full_norm or 'alkoll' in full_norm) and ('icecek' in full_norm or 'içecek' in full_msg)
     )
     if want_alcohol:
-        alcohol_items = [i for i in items if (i.get('category') or '').lower() == ALCOHOL_CATEGORY]
+        alcohol_items = [i for i in items if _cat_norm(i.get('category')) == _cat_norm(ALCOHOL_CATEGORY)]
+        if not alcohol_items:
+            alcohol_items = [i for i in items if any(
+                kw in _cat_norm(i.get('name', '')) + _cat_norm(i.get('subcategory', ''))
+                for kw in ['bira', 'sarap', 'kokteyl', 'raki', 'votka', 'viski', 'cin']
+            )]
         if alcohol_items:
             return alcohol_items[:8], None
 
-    # "tatlı içecek" / "tatlı bir içecek" = tatlı İÇECEK isteniyor, pasta/kek DEĞİL
-    want_sweet_drink = ('tatlı' in full_msg or 'tatli' in full_msg) and (
-        'içecek' in full_msg or 'icecek' in full_msg or 'içecekler' in full_msg
-    )
+    want_drink = 'icecek' in full_norm or 'içecek' in full_msg or 'icecekler' in full_norm
+
+    # "tatlı içecek" = tatlı İÇECEK (pasta değil) - önce kontrol
+    want_sweet_drink = ('tatli' in full_norm or 'tatlı' in full_msg) and want_drink
     if want_sweet_drink:
-        drink_items = [
-            i for i in items
-            if (i.get('category') or '').lower() in DRINK_CATEGORIES
-        ]
-        # Tatlı olanları öne al: mocha, çikolata, limonata, smoothie vb.
-        sweet_drinks = []
-        other_drinks = []
-        for i in drink_items:
-            name = (i.get('name') or '').lower()
-            if any(s in name for s in SWEET_DRINK_NAMES):
-                sweet_drinks.append(i)
-            else:
-                other_drinks.append(i)
+        drink_items = [i for i in items if _cat_norm(i.get('category')) in {_cat_norm(c) for c in DRINK_CATEGORIES}]
+        sweet_drinks = [i for i in drink_items if any(s in _cat_norm(i.get('name', '')) for s in SWEET_DRINK_NAMES)]
+        other_drinks = [i for i in drink_items if i not in sweet_drinks]
         result = (sweet_drinks + other_drinks)[:8]
         if result:
             return result, None
 
+    # "içecek istiyorum" / "icecek" = tüm içecek kategorileri
+    if want_drink:
+        drink_cats = DRINK_CATEGORIES | {ALCOHOL_CATEGORY}
+        drink_items = [i for i in items if _cat_norm(i.get('category')) in {_cat_norm(c) for c in drink_cats}]
+        if drink_items:
+            return drink_items[:8], None
+
     scored = []
     for item in items:
-        kw = (item.get('keywords') or '') + ' ' + (item.get('category') or '') + ' ' + (item.get('name') or '')
-        kw = kw.lower()
-        score = sum(4 for w in words if w in kw)
+        kw = (item.get('keywords') or '') + ' ' + (item.get('category') or '') + ' ' + (item.get('subcategory') or '') + ' ' + (item.get('name') or '')
+        kw_norm = _normalize_for_match(kw)
+        score = sum(4 for w in words if _normalize_for_match(w) in kw_norm)
         if score > 0:
             scored.append((item, score))
     scored.sort(key=lambda x: -x[1])
@@ -377,22 +391,7 @@ def api_chat_suggest(request):
             'suggestions': items[:6],
         })
 
-    # 3. Rule-based: menüden ara (alkollü, kahve, tatlı, bira vb.)
-    suggestions, _ = _get_chat_suggestions(msg, '')
-    if suggestions:
-        if any(w in msg_lower for w in ALCOHOL_KEYWORDS) or (('alkol' in msg_lower or 'alkoll' in msg_lower) and ('içecek' in msg_lower or 'icecek' in msg_lower)):
-            return _api_response({
-                'success': True,
-                'message': 'İşte alkollü içeceklerimizden birkaç öneri 😊',
-                'suggestions': suggestions[:8],
-            })
-        return _api_response({
-            'success': True,
-            'message': 'İşte size birkaç öneri 😊',
-            'suggestions': suggestions[:8],
-        })
-
-    # 4. Groq varsa kullan, yoksa veya hata olursa menüden öner
+    # 3. Groq ÖNCELİKLİ (API key varsa)
     api_key = (os.environ.get('GROQ_API_KEY') or '').strip()
     if api_key:
         try:
@@ -410,7 +409,23 @@ def api_chat_suggest(request):
                 'suggestions': sug[:8],
             })
         except Exception as e:
-            logger.warning("Groq chat hatası, fallback kullanılıyor: %s", str(e))
+            logger.warning("Groq chat hatası, rule-based fallback: %s", str(e))
+
+    # 4. Groq yok/hatalı: rule-based (içecek, bira, kahve vb.)
+    suggestions, _ = _get_chat_suggestions(msg, '')
+    if suggestions:
+        if any(_normalize_for_match(w) in _normalize_for_match(msg_lower) for w in ALCOHOL_KEYWORDS):
+            return _api_response({
+                'success': True,
+                'message': 'İşte alkollü içeceklerimizden birkaç öneri 😊',
+                'suggestions': suggestions[:8],
+            })
+        return _api_response({
+            'success': True,
+            'message': 'İşte size birkaç öneri 😊',
+            'suggestions': suggestions[:8],
+        })
+
     return _api_response({
         'success': True,
         'message': 'İşte size birkaç lezzetli seçenek 😊',
