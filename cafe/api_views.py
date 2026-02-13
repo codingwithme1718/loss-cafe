@@ -160,8 +160,8 @@ STOPWORDS = {'ve', 'ile', 'bir', 'ne', 'var', 'mi', 'mu', 'mı', 'musun', 'mıs�
 DRINK_CATEGORIES = {'sıcak içecekler', 'soğuk içecekler', 'meyve suları', 'meyveli içecekler'}
 # Alkollü içecek kategorisi (bira, şarap vb.)
 ALCOHOL_CATEGORY = 'alkollü içecekler'
-# Alkollü arama kelimeleri
-ALCOHOL_KEYWORDS = {'bira', 'biralar', 'alkol', 'alkollü', 'şarap', 'şaraplar', 'kokteyl', 'kokteyller', 'viski', 'rakı', 'votka', 'cin'}
+# Alkollü arama kelimeleri (alkollu/alkolu yazım varyantları)
+ALCOHOL_KEYWORDS = {'bira', 'biralar', 'alkol', 'alkollü', 'alkolu', 'alkollu', 'şarap', 'şaraplar', 'kokteyl', 'kokteyller', 'viski', 'rakı', 'votka', 'cin'}
 # Tatlı içecekler (isimde geçen - öncelik sırası)
 SWEET_DRINK_NAMES = ['mocha', 'çikolata', 'limonata', 'smoothie', 'buzlu latte', 'mango', 'çilek', 'portakal', 'elma', 'havuç', 'latte', 'cappuccino', 'mojito']
 
@@ -198,8 +198,10 @@ def _get_chat_suggestions(message, context_hint=''):
     if not words:
         return items[:8], None
 
-    # "bira öner" / "alkollü içecek" / "şarap" = Alkollü İçecekler kategorisinden
-    want_alcohol = any(w in full_msg for w in ALCOHOL_KEYWORDS)
+    # "alkollü içecek istiyorum" / "bira öner" / "şarap" = Alkollü İçecekler kategorisinden
+    want_alcohol = any(w in full_msg for w in ALCOHOL_KEYWORDS) or (
+        ('alkol' in full_msg or 'alkoll' in full_msg) and ('içecek' in full_msg or 'icecek' in full_msg)
+    )
     if want_alcohol:
         alcohol_items = [i for i in items if (i.get('category') or '').lower() == ALCOHOL_CATEGORY]
         if alcohol_items:
@@ -264,29 +266,29 @@ def _check_ambiguity(message):
     return None
 
 
-def _menu_line_for_ai(item):
-    """Tam hiyerarşi: Kategori > Alt Kategori > Alt Alt Kategori > Ürün - Fiyat"""
-    parts = [i for i in [item.get('category'), item.get('subcategory'), item.get('subsubcategory'), item.get('name')] if i]
-    return ' > '.join(parts) + f" - {item.get('price', '')}"
-
-
 def _ai_chat(user_msg, prev_msg, history, api_key):
-    """Groq AI ile doğal dil anlama. Ücretsiz: console.groq.com'dan API key al."""
+    """Groq AI ile doğal dil anlama. DB: Category > SubCategory > SubSubCategory > SubSubSubCategory."""
     from groq import Groq
     items = _build_flat_menu(None)
-    menu_text = '\n'.join([f"- {_menu_line_for_ai(i)}" for i in items[:120]])
-    system = f"""Sen samimi bir kafe garsonusun. Kullanıcıya menüden öneri sunuyorsun.
-MENÜ:
+    # Tam hiyerarşi: Kategori > Alt > Alt Alt > Ürün - Fiyat
+    menu_lines = []
+    for i in items[:80]:
+        path = [i.get('category'), i.get('subcategory'), i.get('subsubcategory')]
+        path = [p for p in path if p]
+        path_str = ' > '.join(path) if path else i.get('category', '')
+        menu_lines.append(f"- {path_str}: {i.get('name')} - {i.get('price')}")
+    menu_text = '\n'.join(menu_lines)
+    system = f"""Sen Loss Cafe'nin profesyonel menü asistanısın. Sadece aşağıdaki menüden öneri yapıyorsun.
+
+MENÜ (Kategori > Alt Kategori > Ürün - Fiyat):
 {menu_text}
 
-ZORUNLU KURALLAR:
-- ASLA "bulamadım", "tam uyan ürün bulamadım", "eşleşen ürün yok" gibi ifadeler kullanma. YASAK.
-- Her mesajda MUTLAKA ÖNERİLER ver. Kullanıcı ne yazarsa yazsın, menüden en az 2-4 ürün öner.
-- Belirsiz veya anlaşılmayan istekte: Popüler karışık öner (kahve, tatlı, soğuk içecek, bira vb. menüden).
-- "bira/şarap/alkollü" = Alkollü İçecekler > Biralar/Şaraplar/Kokteyller. "kahve" = Sıcak İçecekler > Kahveler. "tatlı" = Tatlılar.
-- Kategori, alt kategori veya ürün adında benzer kelime varsa mutlaka öner.
-- Format: 1 samimi cümle + "ÖNERİLER:" + JSON array ["Ürün1", "Ürün2", ...] (sadece menüdeki tam isimler).
-- "istemiyorum/farklı/başka" derse: "Ne istersiniz?" de ve yine 2-4 ürün öner.
+KURALLAR (kesin uygula):
+1. Her zaman menüden 2-6 ürün öner. Asla "bulamadım", "tam uyan ürün yok" deme.
+2. Benzer eşleşme yeterli: "kahve" → Türk Kahvesi, Latte, Mocha; "tatlı" → pasta, cheesecake, brownie.
+3. Öneri varsa: Kısa samimi cümle + "ÖNERİLER:" + JSON array ["Ürün Adı1", "Ürün Adı2"] (sadece menüdeki tam isimler).
+4. "başka", "farklı" derse: Farklı kategoriden öner (örn. içecekten yemeğe geç).
+5. Cevabın sıcak ve profesyonel olsun. Kısa tut.
 """
     messages = [{"role": "system", "content": system}]
     for h in history[-6:]:  # Son 6 mesaj
@@ -322,33 +324,20 @@ ZORUNLU KURALLAR:
         try:
             json_str = parts[1].strip().strip("[]")
             names = json.loads("[" + json_str + "]") if json_str else []
-            for n in names[:12]:
-                name = (n if isinstance(n, str) else str(n)).strip().lower()
+            for n in names[:8]:
+                name = (n if isinstance(n, str) else str(n)).strip()
                 for i in items:
-                    if len(suggestions) >= 8:
-                        break
-                    search_in = ' '.join([
-                        i.get('category') or '', i.get('subcategory') or '',
-                        i.get('subsubcategory') or '', i.get('name') or ''
-                    ]).lower()
-                    if name in search_in or (i.get('name') or '').lower() in name:
+                    iname = (i.get("name") or "").lower()
+                    nlow = name.lower()
+                    if nlow in iname or iname in nlow:
                         if i not in suggestions:
                             suggestions.append(i)
+                        break
         except Exception:
             pass
-    # AI "bulamadım" dediyse veya öneri vermediyse: popüler karışık öner
-    fail_phrases = ['bulamadım', 'bulunamadı', 'tam uyan ürün', 'eşleşen ürün yok', 'eşleşme yok']
-    if not suggestions and any(p in text.lower() for p in fail_phrases):
-        text = "Tabii! Size birkaç lezzetli seçenek önereyim 😊"
-        suggestions = items[:8]
     if suggestions:
         return {"success": True, "message": text, "suggestions": suggestions}
-    # Öneri yoksa yine de karışık ver
-    if not suggestions:
-        suggestions = items[:6]
-        if not text.strip().endswith(('!', '.', '?')):
-            text = (text + " İşte size birkaç öneri:").strip() if text else "İşte size birkaç lezzetli seçenek 😊"
-    return {"success": True, "greeting": True, "message": text, "suggestions": suggestions}
+    return {"success": True, "greeting": True, "message": text, "suggestions": []}
 
 
 @csrf_exempt
@@ -356,38 +345,74 @@ ZORUNLU KURALLAR:
 def api_chat_suggest(request):
     """
     POST /api/chat/suggest
-    Sadece Groq AI kullanılır. Kategori, subcategory, subsubcategory her yerde arar.
+    Önce rule-based (menüden arama), Groq sadece fallback.
     """
     try:
         body = json.loads(request.body or '{}')
         msg = (body.get('message') or '').strip()
         prev = (body.get('previous_message') or '').strip()
     except json.JSONDecodeError:
+        body = {}
         msg = ''
         prev = ''
 
-    groq_key = os.getenv('GROQ_API_KEY')
-    if not groq_key:
-        return _api_response({
-            'success': True, 'message': 'Şu an öneri veremiyorum. Lütfen menüden seçin.', 'suggestions': [],
-        })
-
-    # Selamlaşma: Groq'a sorma, direkt menüden öner (models.py'deki Category/SubCategory/SubSubCategory/SubSubSubCategory)
-    greetings = ['selam', 'selamlar', 'merhaba', 'hey', 'hi', 'günaydın', 'iyi akşamlar', 'naber', 'nasılsın', 'slm', 'selamun aleyküm', 'hoşgeldin']
     msg_lower = msg.lower().strip()
+    items = _build_flat_menu(None)
+
+    # 1. Selamlaşma -> menüden 8 öneri
+    greetings = ['selam', 'selamlar', 'merhaba', 'hey', 'hi', 'günaydın', 'iyi akşamlar', 'naber', 'nasılsın', 'slm', 'selamun aleyküm']
     if not msg or msg_lower in greetings or (len(msg.split()) <= 3 and any(g in msg_lower for g in greetings)):
-        items = _build_flat_menu(None)
         return _api_response({
             'success': True, 'greeting': True,
             'message': 'Merhaba! Hoş geldiniz 😊 Ne yemek veya içmek istersiniz?',
             'suggestions': items[:8],
         })
 
-    try:
-        result = _ai_chat(msg, prev, body.get('history', []), groq_key)
-        return _api_response(result)
-    except Exception as e:
-        logger.exception("Groq AI hatası: %s", str(e))
+    # 2. Teşekkür
+    thanks_words = ['teşekkür', 'sağol', 'sağolun', 'eyvallah']
+    if len(msg.split()) <= 4 and any(t in msg_lower for t in thanks_words):
         return _api_response({
-            'success': True, 'message': 'Üzgünüm, şu an yanıt veremiyorum. Menüden seçebilirsiniz.', 'suggestions': [],
+            'success': True, 'greeting': True,
+            'message': 'Rica ederim! Afiyet olsun. Başka bir şey isterseniz yazmanız yeterli 😊',
+            'suggestions': items[:6],
         })
+
+    # 3. Rule-based: menüden ara (alkollü, kahve, tatlı, bira vb.)
+    suggestions, _ = _get_chat_suggestions(msg, '')
+    if suggestions:
+        if any(w in msg_lower for w in ALCOHOL_KEYWORDS) or (('alkol' in msg_lower or 'alkoll' in msg_lower) and ('içecek' in msg_lower or 'icecek' in msg_lower)):
+            return _api_response({
+                'success': True,
+                'message': 'İşte alkollü içeceklerimizden birkaç öneri 😊',
+                'suggestions': suggestions[:8],
+            })
+        return _api_response({
+            'success': True,
+            'message': 'İşte size birkaç öneri 😊',
+            'suggestions': suggestions[:8],
+        })
+
+    # 4. Groq varsa kullan, yoksa veya hata olursa menüden öner
+    api_key = (os.environ.get('GROQ_API_KEY') or '').strip()
+    if api_key:
+        try:
+            history = body.get('history', [])
+            ai_result = _ai_chat(msg, prev, history, api_key)
+            msg_text = ai_result.get('message', 'İşte size birkaç öneri 😊')
+            sug = ai_result.get('suggestions', [])
+            if not sug:
+                sug, _ = _get_chat_suggestions(msg, '')
+            if not sug:
+                sug = items[:8]
+            return _api_response({
+                'success': True,
+                'message': msg_text,
+                'suggestions': sug[:8],
+            })
+        except Exception as e:
+            logger.warning("Groq chat hatası, fallback kullanılıyor: %s", str(e))
+    return _api_response({
+        'success': True,
+        'message': 'İşte size birkaç lezzetli seçenek 😊',
+        'suggestions': items[:8],
+    })

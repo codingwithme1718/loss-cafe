@@ -617,16 +617,14 @@
               return;
             }
             var suggestions = (d && d.suggestions) || [];
+            var txt = (d && d.message) ? d.message : 'İşte size birkaç öneri 😊';
             if (suggestions.length) {
-              var txt = 'Harika tercih! Size özellikle şunları önerebilirim:\n\n';
+              txt += '\n\n';
               suggestions.forEach(function(s) { txt += '• ' + (s.name || '') + (s.price ? ' - ' + s.price : '') + '\n'; });
               txt += '\nBaşka bir şey isterseniz yazmanız yeterli 😊';
-              addMsg(txt.trim(), false);
-              convHistory.push({role: 'assistant', content: txt});
-            } else {
-              addMsg('Hmm, menüde bu tercihe tam uyan ürün bulamadım. Farklı bir şey deneyebilir misiniz? Örneğin "kahve", "tatlı", "soğuk içecek" yazabilirsiniz.', false);
-              convHistory.push({role: 'assistant', content: 'Ürün bulunamadı'});
             }
+            addMsg(txt.trim(), false);
+            convHistory.push({role: 'assistant', content: txt});
           }).catch(function(){
             lastBot.remove();
             addMsg('Üzgünüm, bir sorun oluştu. Lütfen tekrar deneyin.', false);
@@ -638,18 +636,17 @@
           fetch('/api/chat/suggest/', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({message: userText, previous_message: prevMsg})
+            body: JSON.stringify({message: userText, previous_message: prevMsg, history: convHistory.slice(-8)})
           }).then(function(r){ return r.json(); }).then(function(d){
             lastBot.remove();
             var suggestions = (d && d.suggestions) || [];
+            var txt = (d && d.message) ? d.message : 'İşte tam size göre:\n\n';
             if (suggestions.length) {
-              var txt = 'İşte tam size göre:\n\n';
+              txt += '\n\n';
               suggestions.forEach(function(s) { txt += '• ' + (s.name || '') + (s.price ? ' - ' + s.price : '') + '\n'; });
               txt += '\nAfiyet olsun! Başka bir şey isterseniz söylemeniz yeterli 😊';
-              addMsg(txt.trim(), false);
-            } else {
-              addMsg('Hmm, bu sefer tam uyan bir şey bulamadım. Farklı bir tercih deneyebilir misiniz?', false);
             }
+            addMsg(txt.trim(), false);
           }).catch(function(){
             lastBot.remove();
             addMsg('Üzgünüm, bir sorun oluştu. Lütfen tekrar deneyin.', false);
