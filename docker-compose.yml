@@ -17,7 +17,6 @@ services:
       DATABASE_HOST: db  # Corrected to 'db'
       DATABASE_PORT: 5432
       GROQ_API_KEY: ${GROQ_API_KEY:-}
-
   db:
     image: postgres:latest
     environment:
