@@ -370,6 +370,7 @@
     </style>
   </head>
   <body>
+    <div class="page-bg" style="position:fixed;inset:0;top:0;left:0;right:0;bottom:0;background-image:url('{% if background.image and background.image.name and 'bg.jpg' not in background.image.name %}{{ background.image.url }}{% else %}/media/background_images/background_images/bg.jpeg{% endif %}');background-size:cover;background-position:center;background-repeat:no-repeat;background-attachment:fixed;z-index:-1;"></div>
     <nav class="navbar">
       <div class="navbar-logo">
         <a href="/" style="color: white; text-decoration: none">
@@ -404,10 +405,7 @@
       <i class="fa fa-arrow-left" aria-hidden="true"></i>
     </button>
 
-    <main
-      class="container mt-4 main-content-area"
-      style="background-size: cover; background-position: center; background-repeat: no-repeat; background-image: url('{% if background.image and background.image.name and 'bg.jpg' not in background.image.name %}{{ background.image.url }}{% else %}/media/background_images/background_images/bg.jpeg{% endif %}'); max-width: 100%; min-height: 100vh;"
-    >
+    <main class="container mt-4 main-content-area" style="max-width: 100%; min-height: 100vh;">
       {% block content %} {% endblock %}
     </main>
 
