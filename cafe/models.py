@@ -21,6 +21,7 @@ class MenuBackground(models.Model):
     address = models.CharField(max_length=200, default="")
     telephone = models.CharField(max_length=200, default="")
     email = models.CharField(max_length=200, default="")
+    video_url = models.URLField(max_length=500, blank=True, default="", help_text="YouTube, Vimeo veya Instagram Reel linki (mekan tanıtımı)")
 
     def save(self, *args, **kwargs):
         # Compress the image if it exists
@@ -42,6 +43,29 @@ class MenuBackground(models.Model):
             )
 
         super().save(*args, **kwargs)
+
+    def get_video_embed_url(self):
+        """YouTube/Vimeo/Instagram URL'den embed URL döndür."""
+        if not self.video_url:
+            return None
+        url = self.video_url.strip()
+        # YouTube: youtu.be/XXX veya youtube.com/watch?v=XXX
+        if "youtu.be/" in url:
+            vid = url.split("youtu.be/")[-1].split("?")[0]
+            return f"https://www.youtube.com/embed/{vid}" if vid else None
+        if "youtube.com" in url and "v=" in url:
+            import re
+            m = re.search(r"[?&]v=([^&]+)", url)
+            return f"https://www.youtube.com/embed/{m.group(1)}" if m else None
+        # Vimeo: vimeo.com/XXX
+        if "vimeo.com/" in url:
+            vid = url.split("vimeo.com/")[-1].split("?")[0]
+            return f"https://player.vimeo.com/video/{vid}" if vid else None
+        # Instagram Reel: instagram.com/reel/XXX
+        if "instagram.com/reel/" in url:
+            vid = url.split("instagram.com/reel/")[-1].split("/")[0].split("?")[0]
+            return f"https://www.instagram.com/reel/{vid}/embed/" if vid else None
+        return None
 
     def __str__(self):
         return f"Background Color: {self.color}"

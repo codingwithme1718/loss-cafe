@@ -14,7 +14,10 @@ SECRET_KEY = 'django-insecure-)1_8$l1(6*)!&p9=e2&=7r1c89#idvahly+664j3f**u+%3e40
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["nimlab.eu", "24.199.126.247", "losscafe.com.tr", "www.losscafe.com.tr"]
+ALLOWED_HOSTS = [
+    "nimlab.eu", "24.199.126.247", "losscafe.com.tr", "www.losscafe.com.tr",
+    "localhost", "127.0.0.1", "localhost:8000", "127.0.0.1:8000",
+]
 
 
 # Application definition
@@ -148,6 +151,14 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # This should point to /root/loss-
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
+
+# Cache for API and views (5 min API, 2 min pages)
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'OPTIONS': {'MAX_ENTRIES': 200}
+    }
+}
 
 SESSION_COOKIE_SECURE = True  # Use secure cookies
 CSRF_COOKIE_SECURE = True  # Use secure CSRF cookies

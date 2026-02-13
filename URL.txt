@@ -1,0 +1,40 @@
+=== LOSS CAFE - URL'LER ===
+
+Ana sayfa (menü):     http://localhost:8000/
+Admin paneli:         http://localhost:8000/admin/
+
+--- MENÜ API (JSON, CORS açık) ---
+
+1) Tam menü (ağaç yapısı):
+   GET /api/menu/
+   Örnek: https://losscafe.com.tr/api/menu/
+   Döner: categories -> subcategories -> subsubcategories -> subsubsubcategories
+   Her seviyede: id, name, description, price, image_url, order
+
+2) Düz liste (tüm itemlar tek listede):
+   GET /api/menu/flat/
+   Örnek: https://losscafe.com.tr/api/menu/flat/
+   Her item: id, category, subcategory?, subsubcategory?, name, description, price, image_url, level, keywords
+
+3) Chat öneri (AI):
+   POST /api/chat/suggest/
+   Body: {"message": "kahve", "previous_message": "", "history": []}
+
+---
+
+Docker çalıştırmak için:
+  docker compose up -d
+
+Eski proje sayfası geliyorsa (yeniden başlat):
+  docker compose down && docker compose up -d
+  Tarayıcıda: Cmd+Shift+R (Mac) veya Ctrl+Shift+R ile hard refresh
+
+Seed (örnek veri) eklemek için:
+  docker compose exec web python manage.py seed_menu
+  docker compose exec web python manage.py seed_menu --force
+
+AI Chat (ücretsiz - Groq):
+   1. https://console.groq.com adresinden ücretsiz API key al
+   2. docker-compose.yml'de GROQ_API_KEY ekle veya:
+      docker compose exec web python -c "import os; print('GROQ_API_KEY=xxx' in str(os.environ))"
+   3. Container'da: export GROQ_API_KEY=xxx

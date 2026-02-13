@@ -3,7 +3,7 @@
 {% block content %}
 <div class="row category">
     {% for subsubcategory in subsubcategories %}
-        <div class="col-md-3 col-lg-2">
+        <div class="col-4 col-md-3 col-lg-2">
 
             {% if not subsubcategory.price %}
                 <!-- No price: go to next page -->
@@ -11,12 +11,12 @@
             {% endif %}
 
             <div class="card h-100"> 
-                <div class="card-img-container" style="position: relative; width: 100%; padding-top: 75%;">
+                <div class="card-img-container">
                     <img
-                        class="card-img-top {% if subsubcategory.price %}open-viewer{% endif %}"
-                        src="{% if subsubcategory.image %}{{ subsubcategory.image.url }}{% else %}/media/loss_cafe_default.png{% endif %}"
+                        class="card-img-top {% if subsubcategory.price %}open-viewer cursor-zoom{% else %}cursor-pointer{% endif %}"
+                        src="{% if subsubcategory.image and subsubcategory.image.name %}{{ subsubcategory.image.url }}{% else %}data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect fill='%230d5c2e' width='200' height='200'/%3E%3Ctext fill='white' x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='20'%3E{{ subsubcategory.name|slice:':1' }}%3C/text%3E%3C/svg%3E{% endif %}"
                         alt="{{ subsubcategory.name }}"
-                        style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; cursor: {% if subsubcategory.price %}zoom-in{% else %}pointer{% endif %};"
+                        loading="lazy"
                     />
                 </div>
 
@@ -24,10 +24,8 @@
                     <h5 class="card-title" style="font-weight: bold;">{{ subsubcategory.name }}</h5>
 
                     {% if subsubcategory.price %}
-                        <div class="d-flex justify-content-between align-items-center">
-                            <p class="card-text">{{ subsubcategory.description }}</p>
-                            <p class="card-text mb-0" style="font-weight: bold;">{{ subsubcategory.price }}</p>
-                        </div>
+                        <p class="card-text">{{ subsubcategory.description }}</p>
+                        <span class="price-badge">{{ subsubcategory.price }}</span>
                     {% else %}
                         <p class="card-text">{{ subsubcategory.description }}</p>
                     {% endif %}

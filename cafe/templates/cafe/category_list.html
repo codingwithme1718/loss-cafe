@@ -2,19 +2,28 @@
 
 {% block content %}
 
+    {% comment %}Video askıya alındı - canlıya çıkarken DB'ye dokunmamak için{% endcomment %}
+    {% comment %}
+    <div class="menu-video-section">
+      <p class="menu-video-title">Mekanımızı Keşfedin</p>
+      <div class="menu-video-wrap">
+        <iframe src="..." ...></iframe>
+      </div>
+    </div>
+    {% endcomment %}
 
     <!-- Categories Section -->
     <div class="row category">
         {% for category in categories %}
-            <div class="col-md-3 col-lg-2">         
+            <div class="col-4 col-md-3 col-lg-2">         
                 <a href="{% url 'subcategory-list' category.id %}" class="text-decoration-none" style="cursor: pointer;">
                     <div class="card h-100"> 
-                        <div class="card-img-container" style="position: relative; width: 100%; padding-top: 75%;">
+                        <div class="card-img-container">
                             <img
                                 class="card-img-top"
-                                src="{{ category.image.url }}"
+                                src="{% if category.image and category.image.name %}{{ category.image.url }}{% else %}data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect fill='%230d5c2e' width='200' height='200'/%3E%3Ctext fill='white' x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='24'%3E{{ category.name|slice:':1' }}%3C/text%3E%3C/svg%3E{% endif %}"
                                 alt="{{ category.name }}"
-                                style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;"
+                                loading="lazy"
                             />
                         </div>
                         <div class="card-body d-flex flex-column" style="color: wheat !important;">
@@ -26,58 +35,5 @@
             </div>
         {% endfor %}
     </div>
-
-    <!-- CSS for Fixed Video -->
-    <style>
-        .fixed-video {
-	    margin: auto;
-            height: 315px;
-            background: black;
-            border-radius: 10px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
-            z-index: 1000;
-            padding: 5px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .fixed-video video {
-            width: 100%;
-            height: 100%;
-	    object-fit: cover;
-            border-radius: 10px;
-        }
-
-        .close {
-            position: absolute;
-            top: -10px;
-            right: -10px;
-            font-size: 20px;
-            color: white;
-            background: #0e733b;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            text-align: center;
-            line-height: 30px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-    </style>
-
-    <!-- JavaScript for Auto-Open and Close Video -->
-    <script>
-        window.onload = function() {
-            document.getElementById("fixedVideo").style.display = "flex"; // Show the video on page load
-        };
-
-        function closeVideo() {
-            var video = document.getElementById("fixedVideo");
-            var videoTag = document.getElementById("customVideo");
-            video.style.display = "none"; // Hide the video container
-            videoTag.pause(); // Stop the video when closed
-        }
-    </script>
 
 {% endblock %}

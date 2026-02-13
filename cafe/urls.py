@@ -1,5 +1,6 @@
 from django.urls import path
 from .views import search_subsubcategory, MenuView, SubCategoryListView, SubSubCategoryListView, SubSubSubCategoryListView
+from .api_views import api_menu_full, api_menu_flat, api_chat_suggest
 
 urlpatterns = [
     path('', MenuView.as_view(), name='category_list'),  # Use as_view() here
@@ -7,4 +8,8 @@ urlpatterns = [
     path('subcategory/<int:category_id>/', SubCategoryListView.as_view(), name='subcategory-list'),  # Use as_view() here
     path('subcategory/<int:subcategory_id>/subsubcategory/', SubSubCategoryListView.as_view(), name='subsubcategory-list'),
     path('subcategory/<int:subcategory_id>/subsubcategory/<int:subsubcategory_id>', SubSubSubCategoryListView.as_view(), name='subsubsubcategory-list'),
+    # Public API for external access (fiyat listesi, diğer projeler)
+    path('api/menu/', api_menu_full),
+    path('api/menu/flat/', api_menu_flat),
+    path('api/chat/suggest/', api_chat_suggest),
 ]
