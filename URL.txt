@@ -35,6 +35,7 @@ Seed (örnek veri) eklemek için:
 
 AI Chat (ücretsiz - Groq):
    1. https://console.groq.com adresinden ücretsiz API key al
-   2. docker-compose.yml'de GROQ_API_KEY ekle veya:
-      docker compose exec web python -c "import os; print('GROQ_API_KEY=xxx' in str(os.environ))"
-   3. Container'da: export GROQ_API_KEY=xxx
+   2. GROQ_API_KEY'ı ortam değişkeni olarak ver:
+      export GROQ_API_KEY=gsk_xxx
+      docker compose up -d
+      veya .env dosyası oluştur: GROQ_API_KEY=gsk_xxx
