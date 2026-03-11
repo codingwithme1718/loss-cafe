@@ -1,43 +1,67 @@
 {% extends "base.html" %}
 {% load static %}
 {% block content %}
-<div class="row category">
-    {% for subsubcategory in subsubcategories %}
-        <div class="col-12 col-md-6 col-lg-4">
-
-            {% if not subsubcategory.price %}
-                <!-- No price: go to next page -->
-                <a href="{% url 'subsubsubcategory-list' subcategory.id subsubcategory.id %}" class="text-decoration-none" style="cursor: pointer;">
-            {% endif %}
-
-            <div class="card h-100"> 
-                <div class="card-img-container">
-                    <img
-                        class="card-img-top {% if subsubcategory.price %}open-viewer cursor-zoom{% else %}cursor-pointer{% endif %}"
-                        src="{% if subsubcategory.image and subsubcategory.image.name %}{{ subsubcategory.image.url }}{% else %}data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect fill='%230d5c2e' width='200' height='200'/%3E%3Ctext fill='white' x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='20'%3E{{ subsubcategory.name|slice:':1' }}%3C/text%3E%3C/svg%3E{% endif %}"
-                        alt="{{ subsubcategory.name }}"
-                        loading="lazy"
-                    />
-                </div>
-
-                <div class="card-body d-flex flex-column" style="color: wheat !important;">
-                    <h5 class="card-title" style="font-weight: bold;">{{ subsubcategory.name }}</h5>
-
-                    {% if subsubcategory.price %}
-                        <p class="card-text">{{ subsubcategory.description }}</p>
-                        <span class="price-badge">{{ subsubcategory.price }}</span>
-                    {% else %}
-                        <p class="card-text">{{ subsubcategory.description }}</p>
-                    {% endif %}
-                </div>
-            </div>
-
-            {% if not subsubcategory.price %}
-                </a>
-            {% endif %}
-
-        </div>
-    {% endfor %}
+<div class="category-grid">
+  {% for subsubcategory in subsubcategories %}
+    {% if not subsubcategory.price %}
+      {# Bir seviye daha alt kategori: siyah grid kutusu #}
+      <a
+        href="{% url 'subsubsubcategory-list' subcategory.id subsubcategory.id %}?lang={{ lang }}"
+        class="category-tile"
+        style="{% if subsubcategory.image and subsubcategory.image.name %}background-image:url('{{ subsubcategory.image.url }}');{% endif %}"
+      >
+        <span class="category-tile-name">
+          <i class="icons icon-arrow-right"></i>
+          {% if lang == "en" %}
+            {{ subsubcategory.name_en|default:subsubcategory.name }}
+          {% else %}
+            {{ subsubcategory.name }}
+          {% endif %}
+        </span>
+      </a>
+    {% endif %}
+  {% endfor %}
 </div>
+
+{% with priced=subsubcategories|dictsort:"order" %}
+{% if priced %}
+  {% if priced.0.1.price %}
+  <section class="price-strip">
+    <div class="price-strip-inner">
+      {% for subsubcategory in subsubcategories %}
+        {% if subsubcategory.price %}
+        <div class="price-strip-card"
+             data-img="{% if subsubcategory.image and subsubcategory.image.name %}{{ subsubcategory.image.url }}{% endif %}"
+             data-name="{% if lang == 'en' %}{{ subsubcategory.name_en|default:subsubcategory.name }}{% else %}{{ subsubcategory.name }}{% endif %}"
+             data-desc="{% if lang == 'en' %}{{ subsubcategory.description_en|default:subsubcategory.description }}{% else %}{{ subsubcategory.description }}{% endif %}"
+             data-price="{{ subsubcategory.price }} ₺">
+          {% if subsubcategory.image and subsubcategory.image.name %}
+          <img class="price-strip-img" src="{{ subsubcategory.image.url }}" alt="{{ subsubcategory.name }}">
+          {% endif %}
+          <div class="price-strip-title">
+            {% if lang == "en" %}
+              {{ subsubcategory.name_en|default:subsubcategory.name }}
+            {% else %}
+              {{ subsubcategory.name }}
+            {% endif %}
+          </div>
+          <div class="price-strip-price">
+            {{ subsubcategory.price }} <span>₺</span>
+          </div>
+        </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+    <div class="price-strip-footer">
+      <div class="price-strip-search">
+        <input type="text" placeholder="MENÜDE ARA..." />
+      </div>
+      <button class="price-strip-button">KATEGORİLER</button>
+    </div>
+  </section>
+  {% endif %}
+{% endif %}
+{% endwith %}
+
 {% endblock %}
 

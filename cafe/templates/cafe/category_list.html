@@ -2,38 +2,77 @@
 
 {% block content %}
 
-    {% comment %}Video askıya alındı - canlıya çıkarken DB'ye dokunmamak için{% endcomment %}
-    {% comment %}
-    <div class="menu-video-section">
-      <p class="menu-video-title">Mekanımızı Keşfedin</p>
-      <div class="menu-video-wrap">
-        <iframe src="..." ...></iframe>
+  {% if campaign %}
+  <div id="campaign-modal" class="campaign-modal">
+    <div class="campaign-backdrop"></div>
+    <div class="campaign-card"
+         style="{% if campaign.image %}background-image:url('{{ campaign.image.url }}');{% endif %}">
+      <a href="#" class="campaign-fill-link" onclick="window.hideCampaign(); return false;"></a>
+      <button type="button" class="campaign-close" aria-label="Kapat" onclick="window.hideCampaign()">
+        ×
+      </button>
+      <div class="campaign-top-bar">
+        <i class="icons icon-arrow-down"></i>
+        DETAYLI BİLGİ İÇİN TIKLAYIN
+      </div>
+      <div class="campaign-text">
+        {% if lang == "en" and campaign.description_en %}
+          {{ campaign.description_en }}
+        {% else %}
+          {{ campaign.description }}
+        {% endif %}
+        {% if campaign.price_text %}
+          &nbsp; <strong>{{ campaign.price_text }}</strong>
+        {% endif %}
+      </div>
+      <div id="campaignCountdown" class="campaign-countdown">
+        Reklamın bitmesine 5
       </div>
     </div>
-    {% endcomment %}
+  </div>
+  <script>
+    window.hideCampaign = function () {
+      var el = document.getElementById('campaign-modal');
+      if (!el) return;
+      el.classList.add('hide');
+      setTimeout(function(){ el.style.display = 'none'; }, 250);
+    };
+    window.addEventListener('load', function () {
+      var el = document.getElementById('campaign-modal');
+      if (!el) return;
+      var countdownEl = document.getElementById('campaignCountdown');
+      var remaining = 5;
+      var timer = setInterval(function () {
+        remaining -= 1;
+        if (remaining <= 0) {
+          clearInterval(timer);
+          window.hideCampaign();
+        }
+        if (countdownEl) {
+          countdownEl.textContent = 'Reklamın bitmesine ' + Math.max(remaining, 0);
+        }
+      }, 1000);
+    });
+  </script>
+  {% endif %}
 
-    <!-- Categories Section -->
-    <div class="row category">
-        {% for category in categories %}
-            <div class="col-12 col-md-6 col-lg-4">         
-                <a href="{% url 'subcategory-list' category.id %}" class="text-decoration-none" style="cursor: pointer;">
-                    <div class="card h-100"> 
-                        <div class="card-img-container">
-                            <img
-                                class="card-img-top"
-                                src="{% if category.image and category.image.name %}{{ category.image.url }}{% else %}data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect fill='%230d5c2e' width='200' height='200'/%3E%3Ctext fill='white' x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='24'%3E{{ category.name|slice:':1' }}%3C/text%3E%3C/svg%3E{% endif %}"
-                                alt="{{ category.name }}"
-                                loading="lazy"
-                            />
-                        </div>
-                        <div class="card-body d-flex flex-column" style="color: wheat !important;">
-                            <h5 class="card-title" style="font-weight: bold;">{{ category.name }}</h5>
-                            <p class="card-text">{{ category.description }}</p>
-                        </div>
-                    </div>
-                </a>
-            </div>
-        {% endfor %}
-    </div>
+  <div class="category-grid">
+    {% for category in categories %}
+      <a
+        href="{% url 'subcategory-list' category.id %}?lang={{ lang }}"
+        class="category-tile"
+        style="{% if category.image and category.image.name %}background-image:url('{{ category.image.url }}');{% endif %}"
+      >
+        <span class="category-tile-name">
+          <i class="icons icon-arrow-right"></i>
+          {% if lang == "en" %}
+            {{ category.name_en|default:category.name }}
+          {% else %}
+            {{ category.name }}
+          {% endif %}
+        </span>
+      </a>
+    {% endfor %}
+  </div>
 
 {% endblock %}

@@ -16,7 +16,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     "nimlab.eu", "24.199.126.247", "losscafe.com.tr", "www.losscafe.com.tr",
-    "localhost", "127.0.0.1", "localhost:8000", "127.0.0.1:8000",
+    "localhost", "127.0.0.1", "localhost:8000", "127.0.0.1:8000", "0.0.0.0", "0.0.0.0:8000", "192.168.25.132:8000", "192.168.25.132"
 ]
 
 

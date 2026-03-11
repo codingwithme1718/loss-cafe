@@ -8,7 +8,7 @@
     <title>Loss Cafe</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Teko:wght@500;600;700&family=Raleway:wght@400;500;600&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous" />
@@ -183,12 +183,13 @@
       }
       .navbar-logo {
         display: flex;
+        flex-direction: column;
         align-items: center;
-        gap: 12px;
+        gap: 4px;
       }
       .navbar-logo img {
-        width: 52px;
-        height: 52px;
+        width: 110px;
+        height: 110px;
         object-fit: contain;
         border-radius: 8px;
       }
@@ -205,29 +206,59 @@
         align-items: center;
         gap: 8px;
       }
-      .navbar-search input[type="text"] {
-        padding: 10px 14px;
-        border: 1px solid rgba(255,255,255,0.2);
-        border-radius: 8px;
-        font-size: 0.95rem;
-        width: 180px;
-        background: rgba(255,255,255,0.12);
-        color: white;
-        outline: none;
-        transition: border-color 0.2s;
+      .navbar-search form {
+        display: flex;
+        align-items: center;  
+        flex-wrap: nowrap;
       }
-      .navbar-search input::placeholder { color: rgba(255,255,255,0.6); }
-      .navbar-search input:focus { border-color: var(--cafe-accent); }
-      .navbar-search button {
-        padding: 12px 20px;
-        background: linear-gradient(135deg, var(--cafe-accent), var(--cafe-accent-light));
-        color: #1a1a1a;
+      .navbar-back {
+        width: 40px;
+        height: 40px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 10px;
+        background: rgba(0,0,0,0.18);
+        border: 1px solid rgba(255,255,255,0.35);
+        color: var(--cafe-cream);
+        cursor: pointer;
+      }
+      .navbar-back i {
+        font-size: 1.1rem;
+      }
+      .navbar-search input[type="text"] {
+        padding: 12px 18px;
         border: none;
-        border-radius: 10px;
+        border-radius: 999px 0 0 999px;
+        font-size: 0.95rem;
+        width: 260px;
+        background: #ffffff;
+        color: #111111;
+        outline: none;
+      }
+      .navbar-search input::placeholder {
+        color: rgba(0,0,0,0.45);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-size: 0.8rem;
+      }
+      .navbar-search input:focus {
+        box-shadow: 0 0 0 2px rgba(244,196,48,0.8);
+      }
+      .navbar-search button {
+        padding: 0 20px;
+        background: #ffc400;
+        color: #111111;
+        border: none;
+        border-radius: 0 999px 999px 0;
         font-weight: 700;
         cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        box-shadow: 0 4px 15px rgba(244,196,48,0.3);
+        height: 100%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.35);
       }
       .navbar-search button:hover {
         transform: translateY(-2px) scale(1.05);
@@ -237,15 +268,65 @@
       .navbar-search button:active {
         transform: translateY(0) scale(0.98);
       }
+      .navbar-lang {
+        position: absolute;
+        right: 16px;
+        top: 12px;
+        margin-left: 0;
+        z-index: 1200;
+      }
+      .navbar-lang-toggle {
+        width: 40px;
+        height: 40px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0,0,0,0.18);
+        border: 1px solid rgba(255,255,255,0.35);
+        color: var(--cafe-cream);
+        cursor: pointer;
+        outline: none;
+      }
+      .navbar-lang-toggle i {
+        font-size: 1.1rem;
+      }
+      .navbar-lang-menu {
+        position: absolute;
+        right: 0;
+        top: 46px;
+        min-width: 130px;
+        background: rgba(0,0,0,0.9);
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+        border: 1px solid rgba(255,255,255,0.25);
+        padding: 6px 0;
+        display: none;
+        z-index: 1100;
+      }
+      .navbar-lang-menu a {
+        display: block;
+        padding: 8px 14px;
+        color: var(--cafe-cream);
+        font-size: 0.9rem;
+        text-decoration: none;
+        white-space: nowrap;
+      }
+      .navbar-lang-menu a:hover {
+        background: rgba(255,255,255,0.08);
+      }
+      .navbar-lang-menu a.active {
+        background: rgba(244,196,48,0.18);
+        color: var(--cafe-accent-light);
+      }
       main {
         display: flex;
         flex-direction: column;
         align-items: center;
         min-height: 80vh;
-        padding: 100px 24px 60px;
-        margin-top: 76px;
+        padding: 80px 24px 60px;
+        margin-top: 70px;
         position: relative;
-        z-index: 2;
       }
       .row { display: flex; justify-content: center; flex-wrap: wrap; }
       .card {
@@ -458,48 +539,495 @@
       .row.category { width: 100%; max-width: 1000px; padding: 12px; margin: 0 auto; padding-bottom: 24px; justify-content: center; }
       .row.category > [class*="col-"] { padding: 6px; }
       .menu-content-wrap { width: 100%; display: flex; flex-direction: column; align-items: center; }
-      .menu-video-section {
+
+      /* Category & section grid (Happy Moons tarzı tam ekran grid) */
+      .category-grid {
         width: 100%;
-        max-width: 560px;
-        margin-bottom: 28px;
-        text-align: center;
+        max-width: 420px;
+        margin: 0 auto 24px;
+        padding: 8px 6px 14px;
+        background: #000000;
+        border-radius: 10px;
+        box-shadow: 0 12px 40px rgba(0,0,0,0.9);
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        gap: 6px;
       }
-      .menu-video-title {
-        font-size: 0.95rem;
-        font-weight: 600;
+      .category-tile {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none !important;
+        color: #ffffff;
+        border-radius: 6px;
+        overflow: hidden;
+        width: calc(33.333% - 4px);
+        padding-top: 40%;
+        background-color: #000000;
+        background-size: cover;
+        background-position: center;
+        box-shadow:
+          0 4px 12px rgba(0,0,0,0.8),
+          0 0 0 1px rgba(255,255,255,0.12);
+        transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+        opacity: 0.98;
+      }
+      .category-tile::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: none;
+        pointer-events: none;
+      }
+      .category-tile:hover {
+        transform: translateY(-6px) scale(1.02);
+        box-shadow:
+          0 16px 40px rgba(0,0,0,0.85),
+          0 0 0 1px rgba(255,255,255,0.18);
+        opacity: 1;
+      }
+      .category-tile-name {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        padding: 4px 4px 6px;
+        font-family: 'Teko', 'DM Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        font-weight: 700;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        background: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-align: center;
+        line-height: 1.05;
+        word-break: break-word;
+        white-space: normal;
+      }
+      .category-tile-name i {
+        font-weight: 900;
+      }
+
+      @media (min-width: 500px) {
+        .category-grid {
+          max-width: 480px;
+        }
+      }
+
+      @media (max-width: 500px) {
+        .category-tile-name {
+          font-size: 11px;
+          letter-spacing: 0.06em;
+        }
+        .navbar-logo a.text span {
+          font-size: 1.1rem;
+        }
+        .navbar{
+          padding: 15px 28px;
+        }
+        .navbar-search button {
+          padding: 16px 20px;
+        }
+        .navbar-search {
+          width: 100%;
+          margin-top: 72px;
+          justify-content: center;
+        }
+        .navbar-search form {
+          flex: 1;
+          max-width: 360px;
+        }
+        .navbar-search input[type="text"] {
+          width: 100%;
+        }
+      }
+
+      /* Eski ince satırlı liste görünümü (artık sadece ürün sayfasında kullanılmıyor) */
+      .menu-section {
+        width: 100%;
+        max-width: 900px;
+        margin: 0 auto 32px;
+      }
+      .menu-section-title {
+        font-size: 1.4rem;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
         color: var(--cafe-accent);
         margin-bottom: 12px;
-        letter-spacing: 0.05em;
+        border-bottom: 1px solid rgba(244,196,48,0.4);
+        padding-bottom: 6px;
       }
-      .menu-video-wrap {
-        position: relative;
+      .menu-item {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px dashed rgba(255,255,255,0.16);
+        gap: 12px;
+        text-decoration: none !important;
+        color: inherit;
+      }
+      .menu-item:hover {
+        background: rgba(0,0,0,0.18);
+      }
+      .menu-item-thumb {
+        width: 72px;
+        height: 72px;
+        border-radius: 14px;
+        object-fit: cover;
+        flex-shrink: 0;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+      }
+      .menu-item-main {
+        flex: 1;
+        min-width: 0;
+      }
+      .menu-item-name {
+        font-weight: 700;
+        font-size: 1rem;
+        letter-spacing: -0.01em;
+      }
+      .menu-item-desc {
+        font-size: 0.86rem;
+        opacity: 0.85;
+        margin-top: 4px;
+      }
+      .menu-item-price {
+        margin-left: 16px;
+        font-weight: 800;
+        font-size: 0.95rem;
+        color: var(--cafe-accent);
+        white-space: nowrap;
+      }
+
+      /* Ürün kartları (Happy Moons kırmızı–beyaz stiline yakın) */
+      .product-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
         width: 100%;
-        padding-top: 56.25%;
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        max-width: 960px;
+        margin-left: auto;
+        margin-right: auto;
+        top: 10px;
       }
-      .menu-video-wrap iframe {
+      .product-card {
+        background: #ffffff;
+        border-radius: 10px;
+        padding: 12px;
+        margin-bottom: 14px;
+        display: flex;
+        align-items: stretch;
+        gap: 12px;
+        color: #000000;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      }
+      .product-card-image {
+        width: 160px;
+        min-width: 160px;
+        height: 160px;
+        border-radius: 8px;
+        background-size: cover;
+        background-position: center;
+        background-color: #f2f2f2;
+        flex-shrink: 0;
+      }
+      .product-card-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+      .product-card-name {
+        font-family: 'Teko', 'DM Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        font-size: 28px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-bottom: 4px;
+      }
+      .product-card-desc {
+        font-family: 'Raleway', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        font-size: 16px;
+        line-height: 1.4;
+        color: #333333;
+      }
+      .product-card-footer {
+        margin-top: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .product-card-price {
+        font-family: 'Teko', 'DM Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        font-size: 24px;
+        font-weight: 700;
+        color: #000000;
+      }
+      .product-card-price span {
+        font-family: 'Roboto', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+
+      /* Yatay ürün slider'ı (fiyatı olan alt kategoriler için) */
+      .price-strip {
+        width: 100%;
+        max-width: 1000px;
+        margin: 0 auto 20px;
+        border-radius: 14px;
+        overflow: hidden;
+        background: linear-gradient(135deg, #0f7a3d, #0a5028);
+        box-shadow: 0 14px 30px rgba(0,0,0,0.6);
+      }
+      .price-strip-inner {
+        display: flex;
+        align-items: stretch;
+        overflow-x: auto;
+        scrollbar-width: none;
+      }
+      .price-strip-inner::-webkit-scrollbar {
+        display: none;
+      }
+      .price-strip-card {
+        flex: 0 0 210px;
+        margin-right: 6px;
+        background: #ffffff;
+        border-radius: 10px;
+        overflow: hidden;
+        cursor: pointer;
+      }
+      .price-strip-card:last-child {
+        margin-right: 0;
+      }
+      .price-strip-img {
+        width: 100%;
+        height: 140px;
+        object-fit: cover;
+        display: block;
+      }
+      .price-strip-title {
+        padding: 6px 8px 4px;
+        font-family: 'Teko', 'DM Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        font-size: 18px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #111111;
+      }
+      .price-strip-price {
+        padding: 0 8px 8px;
+        font-family: 'Teko', 'DM Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        font-size: 18px;
+        font-weight: 700;
+        color: #0f7a3d;
+      }
+      .price-strip-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 12px 10px;
+        background: rgba(0,0,0,0.15);
+      }
+      .price-strip-search {
+        flex: 1;
+        margin-right: 10px;
+      }
+      .price-strip-search input {
+        width: 100%;
+        padding: 10px 14px;
+        border-radius: 999px;
+        border: none;
+        outline: none;
+        font-size: 0.9rem;
+      }
+      .price-strip-button {
+        padding: 8px 14px;
+        border-radius: 999px;
+        background: #ffc400;
+        color: #111111;
+        font-family: 'Teko', 'DM Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        text-transform: uppercase;
+        font-size: 14px;
+        letter-spacing: 0.08em;
+        border: none;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      .product-modal-card {
+        max-width: 500px;
+        max-height: 90vh;
+        background: #ffffff;
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 18px 45px rgba(0,0,0,0.7);
+        display: flex;
+        flex-direction: column;
+      }
+      .product-modal-img {
+        width: 100%;
+        height: 260px;
+        object-fit: cover;
+      }
+      .product-modal-body {
+        padding: 14px 16px 16px;
+        color: #111111;
+        font-family: 'DM Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+      .product-modal-name {
+        font-family: 'Teko', 'DM Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        font-size: 28px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 6px;
+      }
+      .product-modal-desc {
+        font-size: 15px;
+        margin-bottom: 10px;
+      }
+      .product-modal-price {
+        font-family: 'Teko', 'DM Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        font-size: 24px;
+        font-weight: 700;
+        color: #0f7a3d;
+      }
+      .product-card {
+        cursor: pointer;
+      }
+
+      /* Ana sayfa kampanya popup (Happy Moons reklam stiline benzer) */
+      .campaign-modal {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+      }
+      .campaign-modal.hide {
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s ease-out;
+      }
+      .campaign-backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(0,0,0,0.65);
+        backdrop-filter: blur(4px);
+      }
+      .campaign-card {
+        position: relative;
+        width: 90%;
+        max-width: 600px;
+        max-height: 80vh;
+        aspect-ratio: 4 / 5;
+        /* background-color: #000; */
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: contain;
+        border-radius: 10px;
+        box-shadow: 0 22px 50px rgba(0,0,0,0.8);
+        overflow: hidden;
+        z-index: 1;
+        font-family: 'DM Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+      .campaign-text {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 32px; /* countdown'un biraz üstü */
+        padding: 6px 10px 8px;
+        font-size: 13px;
+        color: #ffffff;
+        text-align: center;
+        background: rgba(0,0,0,0.7);
+        z-index: 2;
+      }
+      .campaign-fill-link {
+        position: absolute;
+        inset: 0;
+        display: block;
+      }
+      .campaign-close {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 26px;
+        height: 26px;
+        border-radius: 999px;
+        border: none;
+        background: rgba(0,0,0,0.4);
+        color: #fff;
+        cursor: pointer;
+        font-size: 18px;
+        line-height: 1;
+        z-index: 3;
+      }
+      .campaign-countdown {
+        position: absolute;
+        bottom: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 4px 12px;
+        border-radius: 999px;
+        background: rgba(0,0,0,0.7);
+        color: #fff;
+        font-size: 11px;
+        z-index: 2;
+      }
+      .campaign-top-bar {
         position: absolute;
         top: 0;
         left: 0;
-        width: 100%;
-        height: 100%;
-        border: none;
+        right: 0;
+        padding: 15px 10px;
+        background: #c00000;
+        color: #ffffff;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        z-index: 2;
+      }
+      .campaign-top-bar i {
+        font-size: 14px;
+      }
+
+
+      @media (max-width: 600px) {
+        .product-card {
+          padding: 10px;
+          gap: 10px;
+        }
+        .product-card-image {
+          width: 120px;
+          min-width: 120px;
+          height: 120px;
+        }
+        .product-card-name {
+          font-size: 24px;
+        }
+        .product-card-desc {
+          font-size: 14px;
+        }
       }
       #backButton { display: none; }
 
       @media (max-width: 500px) {
-        .fixed-video {
-          top: 220px !important;
-          width: 80% !important;
-        }
         #backButton{
           display: inline-block !important;
         }
         .container {
           background-size: contain !important;
-          margin-top: 155px !important;
+          margin-top: 240px !important;
         }
     
         .row.category{
@@ -508,7 +1036,7 @@
         }
 
         main {
-          padding-top: 40px !important;
+          padding-top: 20px !important;
         }
         
         /* Mobile optimizations for WOW effects */
@@ -531,14 +1059,16 @@
           backdrop-filter: blur(20px) saturate(150%) !important;
           -webkit-backdrop-filter: blur(20px) saturate(150%) !important;
         }
+
+        .menu-item {
+          align-items: flex-start;
+        }
+        .menu-item-price {
+          font-size: 0.9rem;
+        }
         
         .card:hover {
           transform: translateY(-8px) scale(1.01) !important;
-        }
-        
-        .video-showcase {
-          margin: 10px auto 30px !important;
-          border-radius: 12px !important;
         }
       }
       
@@ -558,6 +1088,16 @@
       @media (min-width: 1025px) {
         .card:hover {
           transform: translateY(-12px) scale(1.02) rotateX(2deg) !important;
+        }
+        .navbar {
+          padding: 14px 40px;
+        }
+        .navbar-logo img {
+          width: 90px;
+          height: 90px;
+        }
+        .navbar-search {
+          max-width: 420px;
         }
       }
 
@@ -587,59 +1127,44 @@
         
         .navbar-search input[type="text"],
         .navbar-search button {
-          max-width: 85% !important;
-          width: 85%;
+          max-width: 100% !important;
+          width: auto;
         }
-
         .navbar-logo{
-          width: 100%;
-          display: block !important;
-          text-align: center;
+          width: auto;
+          display: flex !important;
+          flex-direction: column;
+          align-items: center;
         }
-
         .navbar-logo a {
-          display: block !important;
-          width: 100%;
+          display: inline-flex !important;
+          width: auto;
         }
-
         .navbar-logo a.text span{
-          font-size: 0.8em;
+          font-size: 1rem;
         }
-
         .navbar-search {
           position: relative;
-          display: block !important;
-          padding: 0px;
-          max-width: 80%;
-          margin: auto;
+          display: flex !important;
+          padding: 0;
+          max-width: 90%;
+          margin: 8px auto 0;
+          justify-content: center;
         }
-  
         .navbar-search input[type="text"] {
-            width: 100%;
-            padding-right: 80px; /* Add space for the button */
-            border: none;
-            border-radius: 0;
+          width: 100%;
         }
-    
-        .navbar-search button {
-            position: absolute;
-            right: 0; /* Position the button on the right side of the input */
-            top: 0;
-            height: 100%;
-            padding: 0 15px; /* Adjust padding to match input height */
-            width: 15%;
-            border-radius: 0;
-        }
-
         .navbar { 
           display: block !important;
         }
     </style>
   </head>
   <body>
-    <!-- Background Image (if exists) -->
+    <!-- Background Image or dynamic color (if exists) -->
     {% if background.image %}
     <div class="bg-image" style="background-image: url('{{ background.image.url }}');"></div>
+    {% elif background and background.color %}
+    <div class="bg-image" style="background-color: {{ background.color }};"></div>
     {% endif %}
     
     <!-- Animated Particles Layer -->
@@ -667,6 +1192,9 @@
     </div>
     
     <nav class="navbar">
+      <button type="button" class="navbar-back" onclick="window.history.back()" aria-label="Geri dön">
+        <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+      </button>
       <div class="navbar-logo">
         <a href="/" style="color: white; text-decoration: none">
           {% if background.icon_image and background.icon_image.name %}<img src="{{ background.icon_image.url }}" alt="Logo" />{% else %}<span style="font-size:2rem">☕</span>{% endif %}
@@ -674,52 +1202,28 @@
         <a href="/" class="text"><span>{% if background %}{{ background.title }}{% else %}Loss Cafe{% endif %}</span></a>
       </div>
       <div class="navbar-search">
-        {% if background %}<form action="{% url 'search_subsubcategory' %}" method="get">
-          <input type="text" placeholder="Arama..." name="q" />
+        {% if background %}
+        <form action="{% url 'search_subsubcategory' %}" method="get">
+          <input type="text" placeholder="MENÜDE ARA..." name="q" />
           <button type="submit" style="background-color: #c4ca1d !important">
-            <i class="fa fa-search"></i>
+            <i class="fa-solid fa-magnifying-glass"></i>
           </button>
-        </form>{% endif %}
+        </form>
+        {% endif %}
+      </div>
+      <div class="navbar-lang">
+        <button type="button" id="lang-toggle" class="navbar-lang-toggle" title="Dil değiştir">
+          <i class="fa-solid fa-globe"></i>
+        </button>
+        <div id="lang-menu" class="navbar-lang-menu">
+          <a href="/?lang=tr" class="{% if lang != 'en' %}active{% endif %}">Türkçe</a>
+          <a href="/?lang=en" class="{% if lang == 'en' %}active{% endif %}">English</a>
+        </div>
       </div>
     </nav>
 
-    <button id="backButton" onclick="window.history.back()" style="
-        display: inline-block;
-        margin: 160px 0px;
-        padding: 10px 20px;
-        background-color: #0e733b;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 1em;
-        position: fixed;
-        float: left;
-        z-index: 1000;
-      ">
-      <i class="fa fa-arrow-left" aria-hidden="true"></i>
-    </button>
-
     <main class="container mt-4 main-content-area" style="max-width: 100%; min-height: 100vh; padding: 100px 24px 60px;">
-      <!-- Video Section (ayrı satır, ortalanmış) -->
       {% load static %}
-      <div style="width: 100%; max-width: 560px; margin: 0 auto 30px; display: flex; justify-content: center;">
-        <div class="col-12 col-md-6 col-lg-4" style="padding: 6px;">
-          <div class="video-showcase" style="height: 320px; border-radius: 20px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1), 0 0 0 1px rgba(244,196,48,0.25);">
-            <video 
-              style="width: 100%; height: 100%; display: block; object-fit: cover;"
-              controls
-              autoplay
-              muted
-              loop
-              playsinline>
-              <source src="{% static 'cafe/videos/cafe-video.mp4' %}" type="video/mp4">
-              Tarayıcınız video etiketini desteklemiyor.
-            </video>
-          </div>
-        </div>
-      </div>
-      
       {% block content %} {% endblock %}
     </main>
 
@@ -737,17 +1241,17 @@
           <div class="social-icons">
             {% if background.href_instagram %}
             <a href="{{ background.href_instagram }}" target="_blank"
-              ><i class="fa fa-instagram" aria-hidden="true"></i
+              ><i class="fa-brands fa-instagram" aria-hidden="true"></i
             ></a>
             {% endif %}
             {% if background.href_twitter %}
             <a href="{{ background.href_twitter }}" target="_blank"
-              ><i class="fa fa-twitter" aria-hidden="true"></i
+              ><i class="fa-brands fa-x-twitter" aria-hidden="true"></i
             ></a>
             {% endif %}
             {% if background.href_facebook %}
             <a href="{{ background.href_facebook }}" target="_blank"
-              ><i class="fa fa-facebook" aria-hidden="true"></i
+              ><i class="fa-brands fa-facebook-f" aria-hidden="true"></i
             ></a>
             {% endif %}
           </div>
@@ -766,7 +1270,7 @@
       <div class="row" style="padding-top: 30px;">
         <div class="container" style="color: wheat !important;">
           <p>
-            Copyright <i class="fa fa-copyright"></i> 2024
+            Copyright <i class="fa-solid fa-copyright"></i> 2024
             <a>LOSS CAFE</a> - Tüm Hakları
             Saklıdır .
           </p>
@@ -801,6 +1305,80 @@
         modal.classList.add("closing");
         setTimeout(() => { modal.style.display = "none"; modal.classList.remove("closing"); }, 250);
       });
+    </script>
+    <!-- Ürün detay popup (fiyatlı strip kartları için) -->
+    <div id="product-modal" class="image-modal">
+      <div id="product-modal-card" class="product-modal-card">
+        <img id="product-modal-img" class="product-modal-img" alt="">
+        <div class="product-modal-body">
+          <div id="product-modal-name" class="product-modal-name"></div>
+          <div id="product-modal-desc" class="product-modal-desc"></div>
+          <div id="product-modal-price" class="product-modal-price"></div>
+        </div>
+      </div>
+    </div>
+    <script>
+      (function () {
+        const modal = document.getElementById('product-modal');
+        const card = document.getElementById('product-modal-card');
+        const imgEl = document.getElementById('product-modal-img');
+        const nameEl = document.getElementById('product-modal-name');
+        const descEl = document.getElementById('product-modal-desc');
+        const priceEl = document.getElementById('product-modal-price');
+
+        function openProductModal(data) {
+          if (!modal || !card) return;
+          if (imgEl && data.img) imgEl.src = data.img;
+          if (nameEl) nameEl.textContent = data.name || '';
+          if (descEl) descEl.textContent = data.desc || '';
+          if (priceEl) priceEl.textContent = data.price || '';
+          modal.style.display = 'flex';
+        }
+
+        function closeProductModal() {
+          if (modal) modal.style.display = 'none';
+        }
+
+        if (modal) {
+          modal.addEventListener('click', function (e) {
+            if (e.target === modal) {
+              closeProductModal();
+            }
+          });
+        }
+
+        document.addEventListener('click', function (e) {
+          const cardEl = e.target.closest('.price-strip-card, .product-card');
+          if (!cardEl) return;
+          e.preventDefault();
+          const data = {
+            img: cardEl.getAttribute('data-img') || '',
+            name: cardEl.getAttribute('data-name') || '',
+            desc: cardEl.getAttribute('data-desc') || '',
+            price: cardEl.getAttribute('data-price') || '',
+          };
+          openProductModal(data);
+        });
+      })();
+    </script>
+    <script>
+      // Simple language dropdown toggle (globe icon)
+      (function() {
+        var toggle = document.getElementById('lang-toggle');
+        var menu = document.getElementById('lang-menu');
+        if (!toggle || !menu) return;
+
+        toggle.addEventListener('click', function(e) {
+          e.stopPropagation();
+          menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
+        });
+
+        document.addEventListener('click', function() {
+          if (menu.style.display === 'block') {
+            menu.style.display = 'none';
+          }
+        });
+      })();
     </script>
 
 
@@ -1030,7 +1608,6 @@
         addMsg('Hoş geldiniz! Ben Loss Cafe\'den size yardımcı oluyorum. Ne yemek veya içmek istersiniz? Tercihinizi yazın, menüden size en uygun önerileri sunayım. Kararsızsanız soru sorarım 😊', false);
       })();
     </script>
-    
     <!-- 3D Parallax Scroll Effect -->
     <script>
       (function() {

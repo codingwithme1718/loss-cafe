@@ -1,30 +1,24 @@
-"""
-Public API for external access to menu data.
-Returns all categories, subcategories, and prices in JSON format.
-AI Chat: Groq (ücretsiz) - GROQ_API_KEY ile aktif olur.
-"""
 import json
 import logging
 import os
 import re
 from django.http import JsonResponse
-
-logger = logging.getLogger(__name__)
 from django.views.decorators.http import require_GET, require_POST
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.cache import cache_page
 from .models import Category, SubCategory, SubSubCategory, SubSubSubCategory
 
+logger = logging.getLogger(__name__)
 
+# ---------------------
+# Menü & Menü Flat Builder
+# ---------------------
 def _url(request, url):
-    """Build absolute URL for API consumers."""
     if not url:
         return None
     return request.build_absolute_uri(url) if request else url
 
-
-def _build_menu_tree(request=None):
-    """Build full menu hierarchy with prices for API response."""
+def _build_menu_tree(request=None, lang='tr'):
     categories = Category.objects.all().prefetch_related(
         'subcategories__subsubcategories__subsubsubcategories'
     )
@@ -32,8 +26,8 @@ def _build_menu_tree(request=None):
     for cat in categories:
         cat_data = {
             'id': cat.id,
-            'name': cat.name,
-            'description': cat.description or '',
+            'name': (cat.name_en or cat.name) if lang == 'en' else cat.name,
+            'description': (cat.description_en or cat.description or '') if lang == 'en' else (cat.description or ''),
             'image_url': _url(request, cat.image.url if cat.image else None),
             'order': cat.order,
             'subcategories': []
@@ -41,8 +35,8 @@ def _build_menu_tree(request=None):
         for sub in cat.subcategories.all():
             sub_data = {
                 'id': sub.id,
-                'name': sub.name,
-                'description': sub.description or '',
+                'name': (sub.name_en or sub.name) if lang == 'en' else sub.name,
+                'description': (sub.description_en or sub.description or '') if lang == 'en' else (sub.description or ''),
                 'price': sub.price,
                 'image_url': _url(request, sub.image.url if sub.image else None),
                 'order': sub.order,
@@ -51,8 +45,8 @@ def _build_menu_tree(request=None):
             for subsub in sub.subsubcategories.all():
                 subsub_data = {
                     'id': subsub.id,
-                    'name': subsub.name,
-                    'description': subsub.description or '',
+                    'name': (subsub.name_en or subsub.name) if lang == 'en' else subsub.name,
+                    'description': (subsub.description_en or subsub.description or '') if lang == 'en' else (subsub.description or ''),
                     'price': subsub.price,
                     'image_url': _url(request, subsub.image.url if subsub.image else None),
                     'order': subsub.order,
@@ -61,8 +55,8 @@ def _build_menu_tree(request=None):
                 for subsubsub in subsub.subsubsubcategories.all():
                     subsub_data['subsubsubcategories'].append({
                         'id': subsubsub.id,
-                        'name': subsubsub.name,
-                        'description': subsubsub.description or '',
+                        'name': (subsubsub.name_en or subsubsub.name) if lang == 'en' else subsubsub.name,
+                        'description': (subsubsub.description_en or subsubsub.description or '') if lang == 'en' else (subsubsub.description or ''),
                         'price': subsubsub.price,
                         'image_url': _url(request, subsubsub.image.url if subsubsub.image else None),
                         'order': subsubsub.order,
@@ -72,19 +66,20 @@ def _build_menu_tree(request=None):
         data.append(cat_data)
     return data
 
-
-def _build_flat_menu(request=None):
-    """Build flat list of all items with prices for easy consumption."""
+def _build_flat_menu(request=None, lang='tr'):
     items = []
     for cat in Category.objects.all().order_by('order'):
         for sub in cat.subcategories.all().order_by('order'):
             if sub.price:
-                parts = [cat.name, sub.name, sub.description or '']
+                sub_name = (sub.name_en or sub.name) if lang == 'en' else sub.name
+                sub_desc = (sub.description_en or sub.description or '') if lang == 'en' else (sub.description or '')
+                cat_name = (cat.name_en or cat.name) if lang == 'en' else cat.name
+                parts = [cat_name, sub_name, sub_desc]
                 items.append({
                     'id': sub.id,
-                    'category': cat.name,
-                    'name': sub.name,
-                    'description': sub.description or '',
+                    'category': cat_name,
+                    'name': sub_name,
+                    'description': sub_desc,
                     'price': sub.price,
                     'image_url': _url(request, sub.image.url if sub.image else None),
                     'level': 'subcategory',
@@ -92,27 +87,36 @@ def _build_flat_menu(request=None):
                 })
             for subsub in sub.subsubcategories.all().order_by('order'):
                 if subsub.price:
-                    parts = [cat.name, sub.name, subsub.name, subsub.description or '']
+                    subsub_name = (subsub.name_en or subsub.name) if lang == 'en' else subsub.name
+                    subsub_desc = (subsub.description_en or subsub.description or '') if lang == 'en' else (subsub.description or '')
+                    cat_name = (cat.name_en or cat.name) if lang == 'en' else cat.name
+                    sub_name = (sub.name_en or sub.name) if lang == 'en' else sub.name
+                    parts = [cat_name, sub_name, subsub_name, subsub_desc]
                     items.append({
                         'id': subsub.id,
-                        'category': cat.name,
-                        'subcategory': sub.name,
-                        'name': subsub.name,
-                        'description': subsub.description or '',
+                        'category': cat_name,
+                        'subcategory': sub_name,
+                        'name': subsub_name,
+                        'description': subsub_desc,
                         'price': subsub.price,
                         'image_url': _url(request, subsub.image.url if subsub.image else None),
                         'level': 'subsubcategory',
                         'keywords': ' '.join(p for p in parts if p).lower(),
                     })
                 for subsubsub in subsub.subsubsubcategories.all().order_by('order'):
-                    parts = [cat.name, sub.name, subsub.name, subsubsub.name, subsubsub.description or '']
+                    subsubsub_name = (subsubsub.name_en or subsubsub.name) if lang == 'en' else subsubsub.name
+                    subsubsub_desc = (subsubsub.description_en or subsubsub.description or '') if lang == 'en' else (subsubsub.description or '')
+                    cat_name = (cat.name_en or cat.name) if lang == 'en' else cat.name
+                    sub_name = (sub.name_en or sub.name) if lang == 'en' else sub.name
+                    subsub_name = (subsub.name_en or subsub.name) if lang == 'en' else subsub.name
+                    parts = [cat_name, sub_name, subsub_name, subsubsub_name, subsubsub_desc]
                     items.append({
                         'id': subsubsub.id,
-                        'category': cat.name,
-                        'subcategory': sub.name,
-                        'subsubcategory': subsub.name,
-                        'name': subsubsub.name,
-                        'description': subsubsub.description or '',
+                        'category': cat_name,
+                        'subcategory': sub_name,
+                        'subsubcategory': subsub_name,
+                        'name': subsubsub_name,
+                        'description': subsubsub_desc,
                         'price': subsubsub.price,
                         'image_url': _url(request, subsubsub.image.url if subsubsub.image else None),
                         'level': 'subsubsubcategory',
@@ -120,123 +124,57 @@ def _build_flat_menu(request=None):
                     })
     return items
 
-
-def _get_default_suggestions(items, n=8):
-    """Kategorilerden karışık öneri - her kategoriden sırayla al."""
-    from collections import defaultdict
-    by_cat = defaultdict(list)
-    for i in items:
-        cat = i.get('category') or 'Diğer'
-        by_cat[cat].append(i)
-    result = []
-    cats = list(by_cat.keys())
-    idx = 0
-    while len(result) < n and idx < 30:
-        for c in cats:
-            if len(by_cat[c]) > idx and len(result) < n:
-                result.append(by_cat[c][idx])
-        idx += 1
-    return result[:n] if result else items[:n]
-
-
-def _build_menu_for_groq(items, max_per_cat=40):
-    """DB'den: Category > SubCategory > SubSubCategory > SubSubSubCategory hiyerarşisi."""
-    from collections import defaultdict
-    by_cat = defaultdict(list)
-    for i in items:
-        by_cat[i.get('category') or 'Diğer'].append(i)
-    lines = []
-    for cat_name in sorted(by_cat.keys()):
-        lines.append(f"\n=== {cat_name} ===")
-        cat_items = by_cat[cat_name][:max_per_cat]
-        for i in cat_items:
-            path = [i.get('subcategory'), i.get('subsubcategory')]
-            path = [p for p in path if p]
-            path_str = ' > '.join(path) if path else ''
-            name_price = f"{i.get('name')} - {i.get('price')}"
-            if path_str:
-                lines.append(f"  {path_str}: {name_price}")
-            else:
-                lines.append(f"  {name_price}")
-    return '\n'.join(lines).strip()
-
-
-def _api_response(data):
-    """JSON response with CORS headers for external access."""
-    r = JsonResponse(data)
-    r['Access-Control-Allow-Origin'] = '*'
-    return r
-
-
-@require_GET
-@cache_page(60 * 5)  # Cache for 5 minutes
-def api_menu_full(request):
-    """
-    GET /api/menu/
-    Returns full menu tree: categories -> subcategories -> subsubcategories -> subsubsubcategories
-    Dış projelerden erişim: GET https://losscafe.com.tr/api/menu/
-    """
-    data = _build_menu_tree(request)
-    return _api_response({'success': True, 'menu': data})
-
-
-@require_GET
-@cache_page(60 * 5)
-def api_menu_flat(request):
-    """
-    GET /api/menu/flat/
-    Returns flat list of all items with prices (for price lists, integrations).
-    Dış projelerden erişim: GET https://losscafe.com.tr/api/menu/flat/
-    """
-    data = _build_flat_menu(request)
-    return _api_response({'success': True, 'items': data})
-
-
+# ---------------------
+# Keyword Normalization
+# ---------------------
 STOPWORDS = {'ve', 'ile', 'bir', 'ne', 'var', 'mi', 'mu', 'mı', 'musun', 'mısın', 'önerin', 'öneri', 'önerir',
-             'bilmiyorum', 'istiyorum', 'istersiniz', 'istiyor', 'yemek', 'içmek', 'falan', 'filan', 'şey',
-             'şeyler', 'ama', 'fakat', 'ancak', 'lütfen', 'teşekkür', 'sağol', 'nedir', 'nasıl', 'hangi'}
+             'bilmiyorum', 'istiyorum', 'istersiniz', 'istiyor', 'istiyorsun', 'istersen', 'yemek', 'içmek',
+             'falan', 'filan', 'şey', 'şeyler', 'ama', 'fakat', 'ancak', 'lütfen', 'teşekkür', 'sağol', 'nedir', 'nasıl', 'hangi'}
 
-# İçecek kategorileri (tatlı içecek = bu kategorilerden tatlı olanlar)
 DRINK_CATEGORIES = {'sıcak içecekler', 'soğuk içecekler', 'meyve suları', 'meyveli içecekler'}
-# Alkollü içecek kategorisi (bira, şarap vb.)
 ALCOHOL_CATEGORY = 'alkollü içecekler'
-# Alkollü arama kelimeleri (alkollu/alkolu yazım varyantları)
-ALCOHOL_KEYWORDS = {'bira', 'biralar', 'alkol', 'alkollü', 'alkolu', 'alkollu', 'şarap', 'şaraplar', 'kokteyl', 'kokteyller', 'viski', 'rakı', 'votka', 'cin', 'tekila', 'tequila', 'mimoza'}
+ALCOHOL_KEYWORDS = {'bira', 'biralar', 'alkol', 'alkollü', 'şarap', 'kokteyl', 'viski', 'rakı', 'votka', 'cin', 'tekila', 'tequila', 'mimoza'}
+SWEET_DRINK_NAMES = ['mocha', 'çikolata', 'limonata', 'smoothie', 'buzlu latte', 'mango', 'çilek', 'portakal', 'elma', 'havuç', 'latte', 'cappuccino', 'mojito']
 
-# Menü subcategory eşlemesi (api/menu/flat verisine göre)
 MENU_SUBCAT_MAP = [
     ('burger', 'burgerler'),
     ('pizza', 'pizzalar'),
     ('bira', 'biralar'),
     ('kahve', 'dunya kahveleri'),
     ('çay', 'caylar'),
-    ('cay', 'caylar'),
     ('makarna', 'makarnalar'),
     ('salata', 'salatalar'),
     ('tatlı', 'tatlilar'),
-    ('tatli', 'tatlilar'),
     ('tavuk', 'tavuk yemekleri'),
     ('et ', 'et yemekleri'),
     ('köfte', 'et yemekleri'),
     ('kokteyl', 'alkollu icecekler'),
     ('viski', 'alkollu icecekler'),
     ('şarap', 'alkollu icecekler'),
-    ('sarap', 'alkollu icecekler'),
 ]
-# Tatlı içecekler (isimde geçen - öncelik sırası)
-SWEET_DRINK_NAMES = ['mocha', 'çikolata', 'limonata', 'smoothie', 'buzlu latte', 'mango', 'çilek', 'portakal', 'elma', 'havuç', 'latte', 'cappuccino', 'mojito']
 
-# Belirsiz durumlar: netleştirme sorusu sor (sıcak, samimi dil)
+_TR_NORM = str.maketrans('ıİğüşöçĞÜŞİÖÇ', 'iigusocGUSIOC')
+def _normalize(text):
+    if not text: return ''
+    return text.lower().translate(_TR_NORM).replace('\u0307','')
+
+def _extract_keywords(text):
+    text = re.sub(r'[^\wğüşıöçĞÜŞİÖÇ\s]', ' ', text.lower())
+    return [w for w in text.split() if len(w) > 1 and w not in STOPWORDS]
+
+# ---------------------
+# Ambiguity Checker
+# ---------------------
 AMBIGUOUS = {
     'tatlı': {
-        'question': 'Anladım! Tatlı derken hangisini kastediyorsunuz? Size tam istediğinizi önerebilmek için soruyorum 😊',
+        'question': 'Anladım! Tatlı derken hangisini kastediyorsunuz? 😊',
         'options': [
-            ('Pasta, kek, cheesecake gibi tatlılar', 'tatlılar pasta kek cheesecake brownie tiramisu'),
+            ('Pasta, kek, cheesecake vb.', 'tatlılar pasta kek cheesecake brownie tiramisu'),
             ('Lezzetli ana yemek (ızgara, köfte vb.)', 'ana yemek ızgara köfte tavuk'),
         ],
     },
     'içecek': {
-        'question': 'Tabii! Hangi tür içecek istersiniz? Sıcak mı soğuk mu tercih edersiniz?',
+        'question': 'Tabii! Hangi tür içecek istersiniz? Sıcak mı soğuk mu?',
         'options': [
             ('Sıcak (kahve, çay)', 'sıcak kahve çay'),
             ('Soğuk (limonata, smoothie, buzlu kahve)', 'soğuk limonata smoothie buzlu'),
@@ -244,142 +182,84 @@ AMBIGUOUS = {
     },
 }
 
-
-# Türkçe karakter normalizasyonu (icecek=içecek, bira eşleşmesi için)
-_TR_NORM = str.maketrans('ıİğüşöçĞÜŞİÖÇ', 'iigusocGUSIOC')
-def _normalize_for_match(text):
-    if not text:
-        return ''
-    t = (text or '').lower().translate(_TR_NORM)
-    return t.replace('\u0307', '')  # İ.lower() -> i+combining dot, temizle
-
-def _extract_keywords(text):
-    text = (text or '').lower()
-    text = re.sub(r'[^\wğüşıöçĞÜŞİÖÇ\s]', ' ', text)
-    return [w for w in text.split() if len(w) > 1 and w not in STOPWORDS]
-
-
-def _get_chat_suggestions(message, context_hint=''):
-    """context_hint: netleştirme cevabından gelen ek anahtar kelimeler."""
-    full_msg = (message + ' ' + context_hint).strip().lower()
-    full_norm = _normalize_for_match(full_msg)
-    items = _build_flat_menu(None)
-    words = _extract_keywords(full_msg)
-    if not words:
-        return items[:8], None
-
-    def _cat_norm(c):
-        return _normalize_for_match(c or '')
-
-    # "alkollü içecek" / "bira" / "şarap" = Alkollü İçecekler
-    want_alcohol = any(_cat_norm(w) in full_norm for w in ALCOHOL_KEYWORDS) or (
-        ('alkol' in full_norm or 'alkoll' in full_norm) and ('icecek' in full_norm or 'içecek' in full_msg)
-    )
-    if want_alcohol:
-        alcohol_items = [i for i in items if _cat_norm(i.get('category')) == _cat_norm(ALCOHOL_CATEGORY)]
-        if not alcohol_items:
-            alcohol_items = [i for i in items if any(
-                kw in _cat_norm(i.get('name', '')) + _cat_norm(i.get('subcategory', ''))
-                for kw in ['bira', 'sarap', 'kokteyl', 'raki', 'votka', 'viski', 'cin', 'tekila', 'tequila', 'mimoza']
-            )]
-        if alcohol_items:
-            return alcohol_items[:8], None
-
-    want_drink = 'icecek' in full_norm or 'içecek' in full_msg or 'icecekler' in full_norm
-
-    # "tatlı içecek" = tatlı İÇECEK (pasta değil) - önce kontrol
-    want_sweet_drink = ('tatli' in full_norm or 'tatlı' in full_msg) and want_drink
-    if want_sweet_drink:
-        drink_items = [i for i in items if _cat_norm(i.get('category')) in {_cat_norm(c) for c in DRINK_CATEGORIES}]
-        sweet_drinks = [i for i in drink_items if any(s in _cat_norm(i.get('name', '')) for s in SWEET_DRINK_NAMES)]
-        other_drinks = [i for i in drink_items if i not in sweet_drinks]
-        result = (sweet_drinks + other_drinks)[:8]
-        if result:
-            return result, None
-
-    # "içecek istiyorum" / "icecek" = tüm içecek kategorileri
-    if want_drink:
-        drink_cats = DRINK_CATEGORIES | {ALCOHOL_CATEGORY}
-        drink_items = [i for i in items if _cat_norm(i.get('category')) in {_cat_norm(c) for c in drink_cats}]
-        if drink_items:
-            return drink_items[:8], None
-
-    scored = []
-    for item in items:
-        kw = (item.get('keywords') or '') + ' ' + (item.get('category') or '') + ' ' + (item.get('subcategory') or '') + ' ' + (item.get('name') or '')
-        kw_norm = _normalize_for_match(kw)
-        score = sum(4 for w in words if _normalize_for_match(w) in kw_norm)
-        if score > 0:
-            scored.append((item, score))
-    scored.sort(key=lambda x: -x[1])
-    seen = set()
-    result = []
-    for item, _ in scored:
-        k = item.get('name', '') + (item.get('category') or '')
-        if k not in seen:
-            seen.add(k)
-            result.append(item)
-            if len(result) >= 8:
-                break
-    return result, None
-
-
-def _check_ambiguity(message):
-    """Belirsiz sorgu varsa netleştirme sorusu döndür."""
-    msg = (message or '').lower()
-    # "tatlı içecek" / "tatlı bir içecek" = net, tatlı içecek isteniyor
-    if 'tatlı' in msg and ('içecek' in msg or 'icecek' in msg):
-        return None
-    for trigger, data in AMBIGUOUS.items():
-        if trigger not in msg:
-            continue
-        # Zaten net mi? (pasta, kek, ana yemek, kahve vb. yazdıysa atla)
-        clear_words = ['pasta', 'kek', 'cheesecake', 'brownie', 'tiramisu', 'ana yemek', 'ızgara', 'köfte', 'kahve', 'çay', 'limonata', 'smoothie', 'buzlu']
-        if any(w in msg for w in clear_words):
-            continue
-        return data
+def _check_ambiguity(msg):
+    msg = (msg or '').lower()
+    for t, data in AMBIGUOUS.items():
+        if t in msg:
+            clear_words = ['pasta','kek','cheesecake','brownie','tiramisu','ana yemek','ızgara','köfte','kahve','çay','limonata','smoothie','buzlu']
+            if any(w in msg for w in clear_words): continue
+            return data
     return None
 
+# ---------------------
+# Chat Suggestion Fallback (multi-intent support)
+# ---------------------
+def _get_chat_suggestions(msg):
+    msg_norm = _normalize(msg)
+    items = _build_flat_menu(None)
+    words = _extract_keywords(msg)
+    if not words: return items[:8], None
 
+    # Çoklu intent: alkol + içecek + tatlı
+    alcohol_items = [i for i in items if _normalize(i.get('category'))==_normalize(ALCOHOL_CATEGORY)]
+    drink_items = [i for i in items if _normalize(i.get('category')) in {_normalize(c) for c in DRINK_CATEGORIES}]
+    sweet_drink_items = [i for i in drink_items if any(s in _normalize(i.get('name','')) for s in SWEET_DRINK_NAMES)]
+    sweet_items = [i for i in items if 'tatlı' in _normalize(i.get('subcategory') or '')]
+
+    suggestions = []
+    if any(w in msg_norm for w in ALCOHOL_KEYWORDS):
+        suggestions += alcohol_items
+    if 'icecek' in msg_norm or 'içecek' in msg_norm:
+        suggestions += sweet_drink_items + drink_items
+    if 'tatlı' in msg_norm:
+        suggestions += sweet_items
+
+    # Keyword scoring fallback
+    if not suggestions:
+        scored = []
+        seen = set()
+        for i in items:
+            kw = (i.get('keywords') or '') + ' ' + (i.get('category') or '') + ' ' + (i.get('subcategory') or '')
+            score = sum(4 for w in words if _normalize(w) in _normalize(kw))
+            if score > 0:
+                k = i.get('name','') + (i.get('category') or '')
+                if k not in seen:
+                    scored.append((i, score))
+                    seen.add(k)
+        scored.sort(key=lambda x:-x[1])
+        suggestions = [i for i,_ in scored]
+
+    return suggestions[:8], None
+
+# ---------------------
+# Groq Chat Integration
+# ---------------------
 def _ai_chat(user_msg, prev_msg, history, api_key):
-    """
-    Groq - tek giriş noktası. Key varsa her şeyi halleder.
-    DB'den menü alır, Groq'a gönderir, cevabı döner.
-    """
     from groq import Groq
     items = _build_flat_menu(None)
-    menu_text = _build_menu_for_groq(items)
-    msg_norm = _normalize_for_match((user_msg or '').lower())
+    menu_text = "\n".join([i['name'] + f" - {i['price']}" for i in items[:50]])
+    msg_norm = _normalize(user_msg or '')
 
-    # Kategori ipucu: "burger" → sadece BURGERLER, "pizza" → PİZZALAR vb.
     cat_hint = ''
     for kw, subcat_norm in MENU_SUBCAT_MAP:
         if kw in msg_norm:
-            cat_hint = f'\nÖNEMLİ: Kullanıcı "{kw}" istiyor. ÖNERİLERİ SADECE "{subcat_norm.upper()}" kategorisinden seç. Başka kategoriden ürün YAZMA.'
-            if kw == 'burger' and ('tavuk' in msg_norm or 'chicken' in msg_norm):
-                cat_hint += ' Tavuklu/chicken burgerlerden öner (CHICKEN BURGER, CHICKEN CHEESE BURGER vb.).'
+            cat_hint = f'\nÖNEMLİ: Kullanıcı "{kw}" istiyor. ÖNERİLERİ SADECE "{subcat_norm.upper()}" kategorisinden seç.'
             break
 
-    system = f"""Sen Loss Cafe'de çalışan samimi bir garson gibisin. Normal, doğal konuş.
-
-MENÜ (DB - menü sorulunca BURADAN öner):
+    system = f"""Sen Loss Cafe'de çalışan samimi bir garson gibisin. Normal konuş.
+MENÜ:
 {menu_text}
 {cat_hint}
-
-SOHBET (nasılsın, selam, teşekkür, naber):
-- Sadece 1-2 cümle normal cevap ver. "İyiyim, sen nasılsın?" gibi.
-- ÖNERİLER, liste, köşeli parantez [ ] ASLA yazma. Sadece konuş.
-
-MENÜ SORUSU (burger öner, ne var, bira istiyorum vb.):
-- Kısa cevap + "ÖNERİLER:" + ["Ürün1", "Ürün2"] (menüdeki TAM isimler, max 8).
+ÖNERİLER, liste, köşeli parantez [ ] ASLA yazma. Sadece konuş.
 """
-    messages = [{"role": "system", "content": system}]
-    for h in history[-8:]:  # Son 8 mesaj - sohbet akışı için
-        messages.append({"role": h.get("role", "user"), "content": (h.get("content", "") or "")[:350]})
+    messages = [{"role":"system","content":system}]
+    for h in history[-8:]:
+        messages.append({"role":h.get("role","user"),"content":h.get("content","")[:350]})
     if prev_msg:
-        messages.append({"role": "user", "content": prev_msg[:150]})
-        messages.append({"role": "assistant", "content": "[Önceki öneri verildi]"})
-    messages.append({"role": "user", "content": user_msg})
+        messages.append({"role":"user","content":prev_msg[:150]})
+        messages.append({"role":"assistant","content":"[Önceki öneri verildi]"})
+    messages.append({"role":"user","content":user_msg})
+
     client = Groq(api_key=api_key)
     resp = client.chat.completions.create(
         model="llama-3.1-8b-instant",
@@ -387,8 +267,9 @@ MENÜ SORUSU (burger öner, ne var, bira istiyorum vb.):
         max_tokens=350,
         temperature=0.4,
     )
-    text = (resp.choices[0].message.content or "").strip()
+    text = (resp.choices[0].message.content or '').strip()
     suggestions = []
+
     if "ÖNERİLER:" in text:
         parts = text.split("ÖNERİLER:")
         text = parts[0].strip()
@@ -396,107 +277,107 @@ MENÜ SORUSU (burger öner, ne var, bira istiyorum vb.):
             json_str = parts[1].strip().strip("[]")
             names = json.loads("[" + json_str + "]") if json_str else []
             for n in names[:8]:
-                name = (n if isinstance(n, str) else str(n)).strip()
+                name = (n if isinstance(n,str) else str(n)).strip()
                 for i in items:
-                    iname = (i.get("name") or "").lower()
-                    nlow = name.lower()
-                    if nlow in iname or iname in nlow:
-                        if i not in suggestions:
-                            suggestions.append(i)
+                    if name.lower() in (i.get("name") or '').lower():
+                        suggestions.append(i)
                         break
         except Exception:
             pass
 
-    # Groq yanlış kategori döndürdüyse düzelt: "burger" dediyse sadece burgerler
     if suggestions and cat_hint:
         for kw, subcat_norm in MENU_SUBCAT_MAP:
             if kw in msg_norm:
-                filtered = [
-                    i for i in suggestions
-                    if subcat_norm in _normalize_for_match(i.get('subcategory') or '')
-                    or subcat_norm in _normalize_for_match(i.get('subsubcategory') or '')
-                    or subcat_norm in _normalize_for_match(i.get('category') or '')
-                ]
-                if kw == 'burger' and ('tavuk' in msg_norm or 'chicken' in msg_norm):
-                    filtered = [i for i in filtered if 'tavuk' in _normalize_for_match(i.get('name') or '') or 'chicken' in (i.get('name') or '').lower()]
+                filtered = [i for i in suggestions if subcat_norm in _normalize(i.get('subcategory') or '')]
                 if filtered:
                     suggestions = filtered[:8]
                 break
 
-    # Mesaj temizliği: Groq bazen "[", "]" kalıntısı bırakıyor
-    text = re.sub(r'\s*\[.*$', '', text).strip()
-    text = re.sub(r'\s*\]\s*$', '', text).strip()
+    return {"success": True, "greeting": False, "message": text, "suggestions": suggestions}
 
-    if suggestions:
-        return {"success": True, "greeting": False, "message": text, "suggestions": suggestions}
-    return {"success": True, "greeting": True, "message": text, "suggestions": []}
+# ---------------------
+# Django API Views
+# ---------------------
+def _api_response(data):
+    r = JsonResponse(data)
+    r['Access-Control-Allow-Origin'] = '*'
+    return r
+
+@require_GET
+@cache_page(60*5)
+def api_menu_full(request):
+    lang = (request.GET.get('lang') or 'tr').lower()
+    if not lang.startswith('en'):
+        lang = 'tr'
+    else:
+        lang = 'en'
+    return _api_response({'success': True, 'menu': _build_menu_tree(request, lang=lang)})
+
+@require_GET
+@cache_page(60*5)
+def api_menu_flat(request):
+    lang = (request.GET.get('lang') or 'tr').lower()
+    if not lang.startswith('en'):
+        lang = 'tr'
+    else:
+        lang = 'en'
+    return _api_response({'success': True, 'items': _build_flat_menu(request, lang=lang)})
 
 
 @require_GET
 def api_test_groq(request):
-    """GET /api/test_groq/ - Groq API bağlantısını test et."""
-    api_key = (os.environ.get('GROQ_API_KEY') or '').strip()
-    if not api_key:
-        return _api_response({
-            'success': False,
-            'error': 'GROQ_API_KEY ortam değişkeni tanımlı değil',
-        })
-    try:
-        from groq import Groq
-        client = Groq(api_key=api_key)
-        resp = client.chat.completions.create(
-            model='llama-3.1-8b-instant',
-            messages=[{'role': 'user', 'content': 'Merhaba, kısaca kendini tanıt.'}],
-            max_tokens=100,
-        )
-        text = (resp.choices[0].message.content or '').strip()
-        return _api_response({
-            'success': True,
-            'message': text,
-            'model': resp.model,
-        })
-    except Exception as e:
-        logger.exception("test_groq hatası")
-        return _api_response({
-            'success': False,
-            'error': str(e),
-        })
-
+    """
+    Basit sağlık kontrolü / Groq entegrasyon testi için endpoint.
+    Frontend veya Postman ile hızlı test yapabilmek için.
+    """
+    has_key = bool((os.environ.get('GROQ_API_KEY') or '').strip())
+    return _api_response({
+        'success': True,
+        'groq_configured': has_key,
+    })
 
 @csrf_exempt
 @require_POST
 def api_chat_suggest(request):
-    """
-    POST /api/chat/suggest
-    GROQ_API_KEY varsa → Groq her şeyi halleder (sohbet + menü önerisi).
-    Key yoksa → basit fallback.
-    """
     try:
         body = json.loads(request.body or '{}')
         msg = (body.get('message') or '').strip()
         prev = (body.get('previous_message') or '').strip()
     except json.JSONDecodeError:
-        body = {}
         msg = ''
         prev = ''
 
     api_key = (os.environ.get('GROQ_API_KEY') or '').strip()
+    history = body.get('history', [])
 
     if api_key:
         try:
-            history = body.get('history', [])
             result = _ai_chat(msg, prev, history, api_key)
-            return _api_response({
-                'success': True,
-                'greeting': result.get('greeting', False),
-                'message': result.get('message', 'Size nasıl yardımcı olabilirim?'),
-                'suggestions': result.get('suggestions', [])[:8],
-            })
+            sugs = result.get('suggestions', [])[:8]
+            if not sugs and msg.strip() and _extract_keywords(msg):
+                db_sugs, _ = _get_chat_suggestions(msg)
+                if db_sugs:
+                    return _api_response({'success': True, 'greeting': False,
+                                          'message': result.get('message','İşte size önerilerimiz:'),
+                                          'suggestions': db_sugs[:8]})
+            return _api_response({'success': True,
+                                  'greeting': result.get('greeting', False),
+                                  'message': result.get('message','Size nasıl yardımcı olabilirim?'),
+                                  'suggestions': sugs})
         except Exception as e:
             logger.warning("Groq hatası: %s", str(e))
 
-    return _api_response({
-        'success': True,
-        'message': 'Ne yemek veya içmek istersiniz? Menüden size önerebilirim 😊',
-        'suggestions': [],
-    })
+    amb = _check_ambiguity(msg)
+    if amb:
+        return _api_response({
+            'success': True,
+            'clarification': amb['question'],
+            'options': [opt[0] for opt in amb['options']],
+            'option_hints': [opt[1] for opt in amb['options']],
+            'suggestions': [],
+        })
+
+    suggestions, _ = _get_chat_suggestions(msg)
+    msg_text = 'İşte size önerilerimiz:' if suggestions else 'Ne yemek veya içmek istersiniz? Menüden size önerebilirim 😊'
+    return _api_response({'success': True, 'greeting': not bool(suggestions),
+                          'message': msg_text, 'suggestions': suggestions[:8]})
