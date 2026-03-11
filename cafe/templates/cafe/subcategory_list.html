@@ -24,45 +24,47 @@
   {% endfor %}
 </div>
 
-{% with priced=subcategories|dictsort:"order" %}
-{% if priced %}
-  {% if priced.0.1.price %}
-  <section class="price-strip">
-    <div class="price-strip-inner">
-      {% for subcategory in subcategories %}
-        {% if subcategory.price %}
-        <div class="price-strip-card"
-             data-img="{% if subcategory.image and subcategory.image.name %}{{ subcategory.image.url }}{% endif %}"
-             data-name="{% if lang == 'en' %}{{ subcategory.name_en|default:subcategory.name }}{% else %}{{ subcategory.name }}{% endif %}"
-             data-desc="{% if lang == 'en' %}{{ subcategory.description_en|default:subcategory.description }}{% else %}{{ subcategory.description }}{% endif %}"
-             data-price="{{ subcategory.price }} ₺">
-          {% if subcategory.image and subcategory.image.name %}
-          <img class="price-strip-img" src="{{ subcategory.image.url }}" alt="{{ subcategory.name }}">
-          {% endif %}
-          <div class="price-strip-title">
-            {% if lang == "en" %}
-              {{ subcategory.name_en|default:subcategory.name }}
-            {% else %}
-              {{ subcategory.name }}
+<ul class="product-list">
+  {% for subcategory in subcategories %}
+    {% if subcategory.price %}
+    <li class="product-card"
+          data-img="{% if subcategory.image and subcategory.image.name %}{{ subcategory.image.url }}{% endif %}"
+          data-name="{% if lang == 'en' %}{{ subcategory.name_en|default:subcategory.name }}{% else %}{{ subcategory.name }}{% endif %}"
+          data-desc="{% if lang == 'en' %}{{ subcategory.description_en|default:subcategory.description }}{% else %}{{ subcategory.description }}{% endif %}"
+          data-price="{{ subcategory.price }} ₺">
+        <div
+          class="product-card-image"
+          style="{% if subcategory.image and subcategory.image.name %}background-image:url('{{ subcategory.image.url }}');{% endif %}"
+        ></div>
+        <div class="product-card-body">
+          <div>
+            <div class="product-card-name">
+              {% if lang == "en" %}
+                {{ subcategory.name_en|default:subcategory.name }}
+              {% else %}
+                {{ subcategory.name }}
+              {% endif %}
+            </div>
+            {% if subcategory.description %}
+            <div class="product-card-desc">
+              {% if lang == "en" %}
+                {{ subcategory.description_en|default:subcategory.description }}
+              {% else %}
+                {{ subcategory.description }}
+              {% endif %}
+            </div>
             {% endif %}
           </div>
-          <div class="price-strip-price">
-            {{ subcategory.price }} <span>₺</span>
+          <div class="product-card-footer">
+            <div class="product-card-price">
+              {{ subcategory.price }} <span>₺</span>
+            </div>
           </div>
         </div>
-        {% endif %}
-      {% endfor %}
-    </div>
-    <div class="price-strip-footer">
-      <div class="price-strip-search">
-        <input type="text" placeholder="MENÜDE ARA..." />
-      </div>
-      <button class="price-strip-button">KATEGORİLER</button>
-    </div>
-  </section>
-  {% endif %}
-{% endif %}
-{% endwith %}
+    </li>
+    {% endif %}
+  {% endfor %}
+</ul>
 
 {% endblock %}
 
